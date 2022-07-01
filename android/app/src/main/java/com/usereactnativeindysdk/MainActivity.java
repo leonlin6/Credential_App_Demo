@@ -5,6 +5,8 @@ import android.system.ErrnoException;
 import android.system.Os;
 
 import com.facebook.react.ReactActivity;
+import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactRootView;
 
 import java.io.File;
 
@@ -28,7 +30,8 @@ public class MainActivity extends ReactActivity {
     System.out.println("externalFilesDir=" + path);
 
     try {
-      Os.setenv("EXTERNAL_STORAGE", path, true);
+      Os.setenv("EXTERNAL_STORAGE", getExternalFilesDir(null).getAbsolutePath(), true);
+      System.loadLibrary("indy");
     } catch (ErrnoException e) {
       e.printStackTrace();
     }
