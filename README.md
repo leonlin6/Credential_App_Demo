@@ -18,4 +18,4 @@ You shoud see following screen when app starts:
 
 ![App](screenshot-app.png)
 
-You have to click on buttons in the right order, otherwise, you'll get an error (if you try to close wallet that has not been open yet, for example). Check the console for the result of every step.
+You have to click on buttons in the right order, otherwise, you'll get an error (if you try to close wallet that has not been open yet, for example). Check the console for the result of every step.# Credential_App_Demo
