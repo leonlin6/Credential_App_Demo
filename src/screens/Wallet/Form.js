@@ -12,37 +12,68 @@ import {LocaleConfig} from 'react-native-calendars';
 
 const Form = (props) => {
 
-    const [mailValue, setMailValue] = useState('');
-    const [phoneValue, setPhoneValue] = useState('');
+    const [userWriteAttributes, setUserWriteAttributes] = useState([]);
+    const [onlyDisplayAttributes, setOnlyDisplayAttributes] = useState([]);
+
+    const [attributesValue, setAttributesValue] = useState({});
+
+    useEffect(() => {
+        try{
+            setUserWriteAttributes(props.route.params.credentialInfo.credentialTemplate.credentialDefinition.format);
+            setOnlyDisplayAttributes(props.route.params.credentialInfo.credentialTemplate.value);
+        }catch(error){
+            console.log(error);
+        }
+    },[])
+
+    const handleInputChange = (text, name) => {
+
+        setAttributesValue({
+          ...attributesValue,
+          [name]: text,
+        });
+        console.log('attributesValue',attributesValue);
+      };
 
     const onSubmit = () => {
+        console.log('info',props.route.params.credentialInfo);
 
-        props.navigation.navigate('CredentialDetailCheck', {
-            '電子信箱': mailValue,
-            '電話號碼': phoneValue
-          });
+        props.navigation.navigate({
+            name:'CredentialDetailCheck',
+            params:{
+                attributesValue:attributesValue
+            }
+        });
+    }
+    
+    const AttributesInput = () => {
+        let temp = null;
+        if(userWriteAttributes.length !== 0){
+            temp = userWriteAttributes.map((item, index)=>{
+                if(item.user_write === true){
+                    return(
+                    <View key={item.key} style={styles.section}>
+                        <View style={styles.questionTitleArea}>
+                            <Text style={styles.questionTitle}>{item.key}</Text>
+                        </View>
+                        <TextInput value={attributesValue[item.key]} onChangeText={(text)=>{handleInputChange(text, item.key)}} style={styles.input} placeholder={`請輸入${item.key}`}></TextInput>
+                    </View>
+                    )
+                }else{
+                    return null;
+                }
+            })
+        }
+        return temp;
     }
 
-
-    
     return (
         <View style={styles.container}>
             <View style={styles.titleArea}>  
-                <Text style={styles.title}>請輸入個人資料</Text>
+                <Text style={styles.title}>請輸入Attribute資料</Text>
             </View>
             <View style={styles.formArea}>
-                <View style={styles.section}>
-                    <View style={styles.questionTitleArea}>
-                        <Text style={styles.questionTitle}>電子信箱</Text>
-                    </View>
-                    <TextInput onChangeText={(e)=>setMailValue(e)} style={styles.input} placeholder='請輸入電子信箱'></TextInput>
-                </View>
-                <View style={styles.section}>
-                    <View style={styles.questionTitleArea}>
-                        <Text onChange={setPhoneValue} style={styles.questionTitle}>電話號碼</Text>
-                    </View>
-                    <TextInput keyboardType="numeric" onChangeText={(e)=>setPhoneValue(e)} style={styles.input} placeholder='請輸入電話號碼'></TextInput>
-                </View>
+                {AttributesInput()}
             </View>
             <View style={styles.btnArea}>
                 <TouchableOpacity onPress={onSubmit} style={styles.btn}>
