@@ -6,28 +6,75 @@
  * @flow
  */
 
-import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar, Button } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // import indy from 'rn-indy-sdk';
 // import indy from 'indy-sdk-react-native';
 
+import React,{useState, useEffect} from 'react';
+
+// import { AuthContext } from './components/context';
+import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
 import anoncreds from 'indy-sdk-react-native';
 import RNFS from 'react-native-fs';
-
+import { NavigationContainer, TabActions, useFocusEffect } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+// Login Page
+import RootStackScreen from './src/navigators/RootStackScreen';
 
 // import {indy, pool, ledger, wallet, did, anoncreds} from 'indy-sdk-react-native';
 
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import axios from 'axios';
 
-const App = () => {
-  let walletHandle;
-  let poolHandle;
-  let prover_link_secret_name = 'link_secret234';
+const App = (props) => {
+
+  const Tab = createBottomTabNavigator();
+  const Stack = createStackNavigator();
+  const Drawer = createDrawerNavigator();
+
   const walletName = {id: 'wallet-123'};
   const walletCredentials = {key: 'key'};
   const local_pool_name = 'genesis';
+  
+
+  // 「prover_create_credential_req」需要params
+  // prover_wallet_handle,
+  // prover_did,
+  // cred_offer_json,
+  // cred_def_json,
+  // prover_link_secret_name
+
+
+  let poolHandle;
+  let walletHandle;
+  let prover_did = 'VsKV7grR1BUE29mG2Fm2kX';
+  let schema_id;
+  let cred_offer_json;
+  let cred_def_json;
+  let prover_link_secret_name = 'link_secret234';
+
+  let cred_req_json;
+  let cred_metadata;
+
+  let cred_id;
+  let cred_json;
+
+//   useEffect(() => {
+
+//     const getDefinition = async () => {
+//     cred_def_json = await indy.buildGetCredDefRequest('VsKV7grR1BUE29mG2Fm2kX','E4BDfu4km5x7ni8P8gzbn2:3:CL:9:fwfweew');
+//   }
+
+//   getDefinition().then(
+//     (response)=>{
+//       console.log('response',response);
+//     }
+//   );
+// },[]);
 
   // wallet 測試用資訊
   const steward = {
@@ -38,110 +85,48 @@ const App = () => {
     wallet_credentials: {
       key: 'steward_wallet_key'
     },
-    seed: '000000000000000000000000Steward8'
+    seed: '000000000000000000000000Steward9'
   }
   
-  // cred_req_metadata_json 測試用資訊
-  const cred_req_metadata_json = {
-    master_secret_blinding_data:{
-        v_prime:"33784739190424736058829825780910412933977036954119051444532435900377304151693833028014859106576250819582322203870678001271258717861296671196984516312404521159937722747369509036232734832181305872821168698341622972834598800714318067294256147421495950824288866986667545868259107208290361071499666166165948093730577063338992960850829092125882807542315897606631660833703590958014409126554344839066587346859570172462485976948819338858870065658567268623930650139469259819409627426057725038910839585744644805367256476000996145151601466616281785867046134861633659983520137033011161475084147737220789187908041121924806564249344972150417544181671367144",
-        vr_prime:"1A0C0131EE01314E5BC5C903B93D10803E5611EEB32300DD660AA1167E01B639"
-    },
-    nonce:"778940210194489888978503",
-    master_secret_name:"123456789"
-  }
 
-  // cred_json 測試用資訊
-  const cred_json = {
-    schema_id:"F2GAtxHHkNSoTK66w5YuCS:2:andrewTest001:0.0.1",
-    cred_def_id:"F2GAtxHHkNSoTK66w5YuCS:3:CL:8:andrew-cred_def-test-001",
-    rev_reg_id:"F2GAtxHHkNSoTK66w5YuCS:4:F2GAtxHHkNSoTK66w5YuCS:3:CL:8:andrew-cred_def-test-001:CL_ACCUM:REVOC_REG_DEF",
-    values:{
-      name:{
-          raw:"我的名字name",
-          encoded:"5oiR55qE5ZCN5a2XbmFtZQ=="
-      },
-      day:{
-          raw:"2020",
-          encoded:"2020"
-      },
-      times:{
-          raw:"20200420",
-          encoded:"20200420"
-      }  
-    }
-  }
 
-  async function getCredentian() {
+
+  const getCredentialInfo = async () => {
     try{
-      //console.log('getCredential onPress');
-     // await anoncreds.proverGetCredential(walletHandle, steward.wallet_config.id);
-     console.log('searchCredential onPress');
-      await anoncreds.proverSearchCredentialsForProofReq(walletHandle);
-    } catch(error){
-      console.log(error);
+
+      const configurationObject = {
+        method: 'get',
+        baseURL:'http://192.168.0.101:5001',
+        url: 'api/v1/qrcode/62bc34898f48d5f246cf5979',
+        headers:{
+          'authorization':`Bearer ${props.loginToken}`,
+          'Content-Type':'application/json'
+        }
+      };
+
+       await axios(configurationObject)
+       .then((response) => {
+          const credentialInfo = response.data;
+          console.log('------credentialInfo-----',credentialInfo);
+          cred_offer_json = JSON.parse(credentialInfo.cred_offer);
+          cred_id = credentialInfo.credential;
+          schema_id = credentialInfo.credentialTemplate.credentialDefinition.cred_def_id;
+       })
+    }catch(error){
+      console.log('error', error);
     }
-  }
+  };
 
-  async function saveCredentian() {
-    try{
-      console.log('saveCredential onPress');
-      /* proverStoreCredential(
-        wh,v 
-        credId, v
-        credReqMetadata, v
-        cred, 
-        credDef, 
-        revRegDef)*/
-
-      /* await anoncreds.prover_store_credential(
-        alice['wallet'], 
-        None, 
-        faber['transcript_cred_request'], 
-        faber['transcript_cred_request_metadata'],
-        alice['transcript_cred'], 
-        alice['transcript_cred_def'], 
-        None)*/
-
-      await anoncreds.proverStoreCredential(
-        walletHandle, 
-        steward.wallet_config.id,
-        cred_req_metadata_json, 
-        cred_json,
-        cred_json.cred_def_id, 
-        'None'
-      );
-  
-      console.log('save credential result', result);
-    } catch(error){
-      console.log(error);
-    }
-  
-  }
-
-  // proverStoreCredential(wh, credId, credReqMetadata, cred, credDef, revRegDef) {
-  //   wh: Handle (Number) - wallet handle (created by openWallet)
-  //   credId: String - (optional, default is a random one) identifier by which credential will be stored in the wallet
-  //   credReqMetadata: Json - a credential request metadata created by proverCreateCredentialReq
-  //   cred: Json - credential json received from issuer
-  //   credDef: Json - credential definition json related to <cred_def_id> in <cred_json>
-  //   revRegDef: Json - revocation registry definition json related to <rev_reg_def_id> in <cred_json>
-  //   -> outCredId: String - out_cred_id: identifier by which credential is stored in the wallet
-
-
-  //  proverGetCredential(wh, credId)
-  
-  
-  async function getWH() {
-    try{
-      console.log('get WH onPress');
-      // const result = await indy.createWallet(walletName, walletCredentials);
-     const result = await AsyncStorage.getItem('@WalletHandle');
-      console.log('result', result);
-    } catch(error){
-      console.log(error);
-    }
-  }
+  // async function getWH() {
+  //   try{
+  //     console.log('get WH onPress');
+  //     // const result = await indy.createWallet(walletName, walletCredentials);
+  //    const result = await AsyncStorage.getItem('@WalletHandle');
+  //     console.log('result', result);
+  //   } catch(error){
+  //     console.log(error);
+  //   }
+  // }
 
   async function createWallet() {
     try{
@@ -261,6 +246,9 @@ const App = () => {
       let [steward_did, steward_verkey] = await indy.create_and_store_my_did(issuer_wallet_handle, did_json)
 
       console.log('Steward DID: ', steward_did);
+      //2vzWtXVnoYgS4Pae9s1ZUj
+
+
       console.log('Steward Verkey: ', steward_verkey);
 
       console.log('create_and_store_my_did result', result);
@@ -271,65 +259,227 @@ const App = () => {
 
   const createMasterSecret = async () => {
     try{
-      console.log('createMasterSecret Press');
-      console.log('walletHandle', walletHandle);
-      console.log('prover_link_secret_name', prover_link_secret_name);
-      
       let secret_id = await indy.proverCreateMasterSecret(walletHandle, prover_link_secret_name)
+    } catch(error){
+      console.log(error);
+    }
+  }
 
-      console.log('secret_id: ', secret_id);
+  
+  const getDefinitionReq = async () => {
+    try{
+      console.log('-----getDefinitionReq----')
+      let parsedData;
+      console.log('schema_id',schema_id);
+
+      //(prover_did, schema_id)
+      let response = await indy.buildGetCredDefRequest('VsKV7grR1BUE29mG2Fm2kX', schema_id);
+
+      console.log('response',response);
+      console.log('poolHandle',poolHandle);
+
+      let definitionResponse = await indy.submitRequest(poolHandle,response);
+      console.log('definitionResponse',definitionResponse);
+      
+      parsedData = await indy.parseGetCredDefResponse(definitionResponse);
+      cred_def_json = parsedData[1];
+      //[definitionID, definitionJSON]
+      console.log('DefinitionID',parsedData[0]);
+      console.log('Definition',parsedData[1]);
 
     } catch(error){
       console.log(error);
     }
   }
+
+
+  const CreateCredentialReq = async () => {
+    const reqResponse = await indy.proverCreateCredentialReq(walletHandle, prover_did, cred_offer_json, cred_def_json, prover_link_secret_name);
+
+    // console.log('walletHandle', walletHandle);
+    // console.log('prover_did', prover_did);
+    // console.log('cred_offer_json', cred_offer_json);
+    // console.log('cred_def_json', cred_def_json);
+    // console.log('prover_link_secret_name', prover_link_secret_name);
+    cred_req_json = reqResponse[0];
+    cred_metadata= reqResponse[1];
+
+    console.log('-------cred_req_json--------', cred_req_json);
+    console.log('-------cred_metadata--------', cred_metadata);
   
+  }
+
+  const submit = async () => {
+    try{
+      const configurationObject = {
+        method: 'put',
+        baseURL:'http://192.168.0.101:5001',
+        url: `api/v1/credential/${cred_id}/download`,
+        headers:{
+          'authorization':`Bearer ${props.loginToken}`,
+          'Content-Type':'application/json'
+        },
+        data:{
+          value:[{
+            "key": "name",
+            "type": 0,
+            "value": "male"
+        }],
+          cred_req_json:JSON.stringify(cred_req_json)
+        }
+      };
+
+
+     let response =  await axios(configurationObject);
+     cred_json = response.data.cred_json;
+      console.log('-----cred_json-----',cred_json);
+
+    }catch(error){
+      console.log('error', error);
+    }
+  }
+
+
+  async function saveCredential() {
+    try{
+      console.log('saveCredential onPress');
+
+      
+      //proverStoreCredential(wh, credId, credReqMetadata, cred, credDef, revRegDef) {
+      console.log('----wh----',walletHandle);
+      console.log('----cred_id----',cred_id);
+      console.log('----cred_metadata----',cred_metadata);
+      console.log('----cred_json----',cred_json);
+      console.log('----cred_def_json----',cred_def_json);
+
+      let parsedCredJson = JSON.parse(cred_json);
+      console.log('---parsedCredJson--', parsedCredJson); 
+
+      const result = await indy.proverStoreCredential(
+        walletHandle, 
+        cred_id,
+        cred_metadata,
+        parsedCredJson,
+        cred_def_json
+      );
+  
+      console.log('save credential result', result);
+    } catch(error){
+      console.log(error);
+    }
+  
+  }
+
+  const getCredFromWallet = async () => {
+    let response = await indy.proverGetCredentials(walletHandle);
+    console.log(response);
+  }
+
+  const initial = async () => {
+    await getCredentialInfo();
+    await openWallet();
+    await openPool();
+  }
+
+  const handleRequest = async () => {
+    await getDefinitionReq();
+    await CreateCredentialReq();
+    await submit();
+    await saveCredential();
+  }
+
+  const getWalletCredentials = async () => {
+    await getCredFromWallet();
+
+  }
+
+  const ButtonArea = () => {
+    return(
+      <SafeAreaView>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
+        <View style={styles.body}>
+          <Text style={styles.sectionDescription}>Check console.log for test results</Text>
+          {/* <View style={styles.sectionContainer}>
+            <Button title="Get Wallet Handle from AsyncStorage" onPress={getWH} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="Create wallet" onPress={createWallet} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="getCredentialInfo" onPress={getCredentialInfo} />
+          </View>  
+          <View style={styles.sectionContainer}>
+            <Button title="Open wallet" onPress={openWallet} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="Close wallet" onPress={closeWallet} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="Delete wallet" onPress={deleteWallet} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="Save Credential" onPress={saveCredentian} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="Get Credential" onPress={getCredentian} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="createPool" onPress={createPool} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="openPool" onPress={openPool} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="closePool" onPress={closePool} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="createDid" onPress={createDID} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="createMasterSecret" onPress={createMasterSecret} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="getDefinitionReq" onPress={getDefinitionReq} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="CreateCredentialReq" onPress={CreateCredentialReq} />
+          </View>  
+
+          <View style={styles.sectionContainer}>
+            <Button title="submit" onPress={submit} />
+          </View>  
+          <View style={styles.sectionContainer}>
+            <Button title="saveCredential" onPress={saveCredential} />
+          </View>  
+          <View style={styles.sectionContainer}>
+            <Button title="getCredFromWallet" onPress={getCredFromWallet} />
+          </View>   */}
+          <View style={styles.sectionContainer}>
+            <Button title="initial" onPress={initial} />
+          </View>  
+          <View style={styles.sectionContainer}>
+            <Button title="handleRequest" onPress={handleRequest} />
+          </View>  
+          <View style={styles.sectionContainer}>
+            <Button title="getWalletCredentials" onPress={getWalletCredentials} />
+          </View>  
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+    )
+  }
+
   return (
     <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
-          <View style={styles.body}>
-            <Text style={styles.sectionDescription}>Check console.log for test results</Text>
-            <View style={styles.sectionContainer}>
-              <Button title="Get Wallet Handle from AsyncStorage" onPress={getWH} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="Create wallet" onPress={createWallet} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="Open wallet" onPress={openWallet} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="Close wallet" onPress={closeWallet} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="Delete wallet" onPress={deleteWallet} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="Save Credential" onPress={saveCredentian} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="Get Credential" onPress={getCredentian} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="createPool" onPress={createPool} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="openPool" onPress={openPool} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="closePool" onPress={closePool} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="createDid" onPress={createDID} />
-            </View>
-            <View style={styles.sectionContainer}>
-              <Button title="createMasterSecret" onPress={createMasterSecret} />
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+      <NavigationContainer>  
+        <Stack.Navigator>
+          {props.loginToken !== null ? 
+            (<Stack.Screen name='ButtonArea' component={ButtonArea} options={{headerShown: false}}></Stack.Screen>)
+            : 
+            (<Stack.Screen name='RootStackScreen' component={RootStackScreen} options={{headerShown: false}}></Stack.Screen>)
+          } 
+        </Stack.Navigator>
+      </NavigationContainer>
     </>
   )
 }
@@ -355,4 +505,11 @@ const styles = StyleSheet.create({
   },
 })
 
-export default App
+const mapStateToProps = (state) => {  
+  return {
+      loginToken: state.loginToken
+  };
+}  
+
+
+export default connect(mapStateToProps)(App);

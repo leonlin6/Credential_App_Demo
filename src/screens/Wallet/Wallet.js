@@ -25,62 +25,56 @@ import {
 import transactions_local_genesis from '../../config/transactions_local_genesis'
 
 const Wallet = (props) => {
-  const walletName = {id: 'wallet-123'};
-  const walletCredentials = {key: 'key'};
+  let walletHandle;
+  let prover_did = 'VsKV7grR1BUE29mG2Fm2kX';
+  let cred_offer_json;
+  let cred_def_json;
+  let prover_link_secret_name = 'link_secret234';
+  let cred_id;
+
+
+  const walletName = {id: 'sbadmin@gmail.com'};
+  const walletCredentials = {key: '12345678'};
+
   const local_pool_name = 'genesis';
   const [showDrawerMenu, setShowDrawerMenu] = useState(false);
  
 
-
-  useEffect(() => {
-    async function initIndy () {
-      // await createWallet();
-      // await openWallet();
-      // await createPool();
-      // await openPool();
-    }
-    initIndy ();
-  },[])
-
-
-  const createWallet = async () => {
+  async function createWallet() {
     try{
       console.log('createWallet onPress');
-      const result = await indy.createWallet(walletName, walletCredentials);
+      const result = await indy.createWallet(walletConfig);
+      
       console.log('result', result);
     } catch(error){
       console.log(error);
     }
   }
-
-  const openWallet = async () => {
+  
+  async function openWallet() {
     try{
-      console.log('openWallet onPress');
-      const result = await indy.openWallet(walletName, walletCredentials);
-      AsyncStorage.setItem('walletHandle',result.toString())
+      console.log('openWallet onPress')
+      const result = await indy.openWallet(walletConfig, walletCredentials);
+      await AsyncStorage.setItem('@WalletHandle', result.toString());
+      console.log('openWallet onPress2')
 
-      console.log('result', result);
+      console.log(result);
+      walletHandle = result;
+      // AsyncStorage.setItem('walletHandle', result);
+
+
+
+      console.log('result', result)
+      let did = await indy.createAndStoreMyDid(result,{})
+      console.log('did --- ', did)
     } catch(error){
       console.log(error);
     }
   }
 
-  const createPool = async () => {
+  async function createPool() {
     try{
-      // console.log('create pool onPress');
-     
-    //  let pool= './IndyTest.js'
-      // let ttt =require('./genesis.txn');
-      // console.log('ttt',ttt);
-      // const genesisPath = `${RNFS.DocumentDirectoryPath}/src/screens/${local_pool_name}.txn`
-      // console.log('genesisPath',genesisPath);
-      // let pool_config = {genesis_txn:pool};
-      // console.log('poolConfig', pool_config);
-      // const result = await indy.createPoolLedgerConfig(local_pool_name, pool_config);
-
-      // console.log('result', result);
-
-      var path = RNFS.DocumentDirectoryPath + '/test.txt';
+        var path = RNFS.DocumentDirectoryPath + '/test.txt';
 
         let ttt = `{"reqSignature":{},"txn":{"data":{"data":{"alias":"Node1","blskey":"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba","blskey_pop":"RahHYiCvoNCtPTrVtP7nMC5eTYrsUA8WjXbdhNc8debh1agE9bGiJxWBXYNFbnJXoXhWFMvyqhqhRoq737YQemH5ik9oL7R4NTTCz2LEZhkgLJzB3QRQqJyBNyv7acbdHrAT8nQ9UkLbaVL9NBpnWXBTw4LEMePaSHEw66RzPNdAX1","client_ip":"192.168.0.101","client_port":9702,"node_ip":"192.168.0.101","node_port":9701,"services":["VALIDATOR"]},"dest":"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv"},"metadata":{"from":"Th7MpTaRZVRYnPiabds81Y"},"type":"0"},"txnMetadata":{"seqNo":1,"txnId":"fea82e10e894419fe2bea7d96296a6d46f50f93f9eeda954ec461b2ed2950b62"},"ver":"1"}
         {"reqSignature":{},"txn":{"data":{"data":{"alias":"Node2","blskey":"37rAPpXVoxzKhz7d9gkUe52XuXryuLXoM6P6LbWDB7LSbG62Lsb33sfG7zqS8TK1MXwuCHj1FKNzVpsnafmqLG1vXN88rt38mNFs9TENzm4QHdBzsvCuoBnPH7rpYYDo9DZNJePaDvRvqJKByCabubJz3XXKbEeshzpz4Ma5QYpJqjk","blskey_pop":"Qr658mWZ2YC8JXGXwMDQTzuZCWF7NK9EwxphGmcBvCh6ybUuLxbG65nsX4JvD4SPNtkJ2w9ug1yLTj6fgmuDg41TgECXjLCij3RMsV8CwewBVgVN67wsA45DFWvqvLtu4rjNnE9JbdFTc1Z4WCPA3Xan44K1HoHAq9EVeaRYs8zoF5","client_ip":"192.168.0.101","client_port":9704,"node_ip":"192.168.0.101","node_port":9703,"services":["VALIDATOR"]},"dest":"8ECVSk179mjsjKRLWiQtssMLgp6EPhWXtaYyStWPSGAb"},"metadata":{"from":"EbP4aYNeTHL6q385GuVpRV"},"type":"0"},"txnMetadata":{"seqNo":2,"txnId":"1ac8aece2a18ced660fef8694b61aac3af08ba875ce3026a160acbc3a3af35fc"},"ver":"1"}
@@ -105,17 +99,43 @@ const Wallet = (props) => {
     }
   }
 
-  const openPool = async () => {
+  async function openPool() {
     try{
       console.log('open pool onPress');
       var path = RNFS.DocumentDirectoryPath + '/test.txt';
+
       let pool_config = {genesis_txn:path};
-      let result = await indy.openPoolLedger(local_pool_name, "");
+
+      let result = await indy.openPoolLedger(local_pool_name);
+      poolHandle = result;
       console.log('open pool result', result);
     } catch(error){
       console.log(error);
     }
   }
+
+  const createMasterSecret = async () => {
+    try{
+      let secret_id = await indy.proverCreateMasterSecret(walletHandle, prover_link_secret_name)
+    } catch(error){
+      console.log(error);
+    }
+  }
+
+
+
+
+  useEffect(() => {
+    async function initIndy () {
+      // await createWallet();
+      // await openWallet();
+      // await createPool();
+      // await openPool();
+      // await createMasterSecret();
+    }
+    initIndy ();
+  },[])
+
 
   const onScanPress = () => {
       props.navigation.navigate('Scan');
