@@ -12,51 +12,71 @@ import {LocaleConfig} from 'react-native-calendars';
 
 const Form = (props) => {
 
-    const [userWriteAttributes, setUserWriteAttributes] = useState([]);
+    const [writeAttributes, setWriteAttributes] = useState([]);
     const [onlyDisplayAttributes, setOnlyDisplayAttributes] = useState([]);
-
-    const [attributesValue, setAttributesValue] = useState({});
+    const [mergedWriteAttributes, setMergedWriteAttributes] = useState({});
 
     useEffect(() => {
         try{
-            setUserWriteAttributes(props.route.params.credentialInfo.credentialTemplate.credentialDefinition.format);
-            setOnlyDisplayAttributes(props.route.params.credentialInfo.credentialTemplate.value);
+
+            let credFormat = props.route.params.credentialInfo.credentialTemplate.credentialDefinition.format;
+            let credValue = props.route.params.credentialInfo.credentialTemplate.value;
+
+            let writeArray = [];
+            let displayArray = [];
+
+            //get user write attributes
+            credFormat.forEach((item) => {
+                if(item.user_write === true){
+                    writeArray.push(item);
+                }
+            });
+
+            // get display only attribute and merge its value
+            credValue.forEach((it) => {
+                displayArray.push(it);
+            });
+
+            setWriteAttributes(writeArray);
+            setOnlyDisplayAttributes(displayArray);
+
         }catch(error){
             console.log(error);
         }
     },[])
 
-    const handleInputChange = (text, name) => {
-
-        setAttributesValue({
-          ...attributesValue,
-          [name]: text,
-        });
-        console.log('attributesValue',attributesValue);
+    const handleInputChange = (text, item, index) => {
+        let arr = [...writeAttributes];
+        arr[index].value = text
+        setMergedWriteAttributes(arr);
       };
 
-    const onSubmit = () => {
-        console.log('info',props.route.params.credentialInfo);
 
+    const onSubmit = () => {
         props.navigation.navigate({
             name:'CredentialDetailCheck',
             params:{
-                attributesValue:attributesValue
+                mergedWriteAttributes: mergedWriteAttributes,
+                onlyDisplayAttributes:onlyDisplayAttributes,
+                credentialInfo: props.route.params.credentialInfo,
+                cred_offer_json: props.route.params.cred_offer_json,
+                cred_id: props.route.params.cred_id,
+                cred_def_id: props.route.params.cred_def_id
             }
         });
     }
     
     const AttributesInput = () => {
         let temp = null;
-        if(userWriteAttributes.length !== 0){
-            temp = userWriteAttributes.map((item, index)=>{
+        if(writeAttributes.length !== 0){
+            temp = writeAttributes.map((item, index)=>{
                 if(item.user_write === true){
                     return(
                     <View key={item.key} style={styles.section}>
                         <View style={styles.questionTitleArea}>
                             <Text style={styles.questionTitle}>{item.key}</Text>
                         </View>
-                        <TextInput value={attributesValue[item.key]} onChangeText={(text)=>{handleInputChange(text, item.key)}} style={styles.input} placeholder={`請輸入${item.key}`}></TextInput>
+                        <TextInput value={mergedWriteAttributes[item.key]} onChangeText={(text)=>{handleInputChange(text, item, index)}} style={styles.input} placeholder={`請輸入${item.key}`}></TextInput>
                     </View>
                     )
                 }else{
@@ -64,6 +84,7 @@ const Form = (props) => {
                 }
             })
         }
+        
         return temp;
     }
 

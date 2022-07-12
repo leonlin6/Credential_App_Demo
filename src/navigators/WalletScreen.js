@@ -18,7 +18,7 @@ const WalletScreen = (props) => {
     props.navigation.navigate({
       name:'CredentialList',
       params:{
-        from:'WalletScreen'
+        from:'Wallet'
       }
     });
   }
@@ -27,7 +27,7 @@ const WalletScreen = (props) => {
     props.navigation.navigate({
       name:'CredentialHistory',
       params:{
-        from:'WalletScreen'
+        from:'Wallet'
       }
     });
   }

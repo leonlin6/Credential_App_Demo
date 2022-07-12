@@ -1,14 +1,4 @@
 import React, {useEffect, useState, useRef} from 'react';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import * as Animatable from 'react-native-animatable';
-// import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-// import messaging from '@react-native-firebase/messaging';
-import indy from 'indy-sdk-react-native';
-import axios from 'axios';
-import RNFS from 'react-native-fs';
-
-import {connect} from 'react-redux';
 import { 
   View, 
   Text, 
@@ -20,8 +10,16 @@ import {
   Keyboard,
 } from 'react-native';
 
-// import LoginData from '../APIs/LoginData';
-import {setLoginToken} from '../../actions/index'
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as Animatable from 'react-native-animatable';
+import indy from 'indy-sdk-react-native';
+import axios from 'axios';
+import RNFS from 'react-native-fs';
+
+// redux
+import {connect} from 'react-redux';
+import {setLoginToken, setWalletHandle, setPoolHandle, setMasterSecret} from '../../actions/index'
 
 const LOGO_CIRCLE_HEIGHT = 150;
 const LOGO_SMALL_CIRCLE_HEIGHT = 100;
@@ -31,9 +29,8 @@ const LOGO_SMALL_WIDTH = 50;
 const LoginScreen = (props) => {
   const [userName , setUserName] = useState('');
   const [password , setPassword] = useState('');
-  // const [userToken, setUserToken] = useState(null);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [inputIDFocus, setInputIDFocus] = useState(false);
   const [inputPasswordFocus, setInputPasswordFocus] = useState(false);
   const [passwordShow, setPasswordShow] = useState(false);
@@ -41,6 +38,7 @@ const LoginScreen = (props) => {
   const IDWrapStyle = inputIDFocus? styles.inputWrapFocus : styles.inputWrap;
   const passwordWrapStyle = inputPasswordFocus? styles.inputWrapFocus : styles.inputWrap;
   const [keyboardStatus, setKeyboardStatus] = useState(undefined);
+
   var resizeLogoCircleAnim = useRef(new Animated.Value(LOGO_CIRCLE_HEIGHT)).current;
   var resizeLogoAnim = useRef(new Animated.Value(LOGO_WIDTH)).current;
 
@@ -48,22 +46,22 @@ const LoginScreen = (props) => {
   const walletCredentials = {key: '12345678'};
   const local_pool_name = 'genesis';
   let isFirstLogin;
+  let WH;
+  let prover_link_secret_name = 'link_secret234';
 
   useEffect(() => {
     const determineFirstLogin = async () => {
-      const WH = await AsyncStorage.getItem('@WalletHandle');
-      console.log('---------WH--------', WH);
-      if(WH === null){
-        isFirstLogin = true;
+      const isWalletExist = await AsyncStorage.getItem('@HasWallet');
+console.log('isWalletExist',isWalletExist);
+      if(isWalletExist === 'true'){
+        isFirstLogin = false;
       }
       else{
-        isFirstLogin = false;
+        isFirstLogin = true;
       }
     }
     determineFirstLogin();
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+
   })
 
   // run keyboard animation stuff
@@ -104,13 +102,22 @@ const LoginScreen = (props) => {
   }
   ,[]);
 
+// useEffect(() => {
+//   if(props.walletHandle !== null){
+//     console.log('props create master secret in');
+//     createMasterSecret();
 
+//   }
 
-  // indy sdk control
+// },[props.walletHandle])
+
+  // indy sdk control function
   const createWallet = async () => {
     try{
-      console.log('-----createWallet onPress-----');
+      console.log('====createWallet onPress====');
       const result = await indy.createWallet(walletConfig, walletCredentials);
+      await AsyncStorage.setItem('@HasWallet', 'true');
+
       console.log('result', result);
     } catch(error){
       console.log(error);
@@ -119,10 +126,10 @@ const LoginScreen = (props) => {
 
   const openWallet = async () => {
     try{
-      console.log('-----openWallet onPress-----');
+      console.log('====openWallet onPress====');
       const result = await indy.openWallet(walletConfig, walletCredentials);
-      await AsyncStorage.setItem('@WalletHandle',result.toString())
-
+      WH = result;
+      props.setWalletHandle(result);
       console.log('result', result);
     } catch(error){
       console.log(error);
@@ -133,7 +140,7 @@ const LoginScreen = (props) => {
 
   const createPool = async () => {
     try{
-    console.log('-----create pool onPress-----');
+    console.log('====create pool onPress====');
 
       var path = RNFS.DocumentDirectoryPath + '/test.txt';
 
@@ -164,39 +171,74 @@ const LoginScreen = (props) => {
 
   const openPool = async () => {
     try{
-      console.log('-----open pool onPress-----');
+      console.log('====open pool onPress====');
       var path = RNFS.DocumentDirectoryPath + '/test.txt';
       let pool_config = {genesis_txn:path};
-      let result = await indy.openPoolLedger(local_pool_name,);
+      const result = await indy.openPoolLedger(local_pool_name);
+      props.setPoolHandle(result);
       console.log('open pool result', result);
     } catch(error){
       console.log(error);
     }
   }
 
+  const createMasterSecret = async () => {
+    console.log('====createMasterSecret on press====');
+    try{
+      const secretID = await AsyncStorage.getItem('@MasterSecretID');
+      console.log('---secretID----',secretID);
 
+      if(secretID !== null){
+        console.log('---secretID exist----');
+        props.setMasterSecret(secretID);
+      }else{
+        console.log('---secretID null---');
+        console.log('---props.walletHandle---',props.walletHandle);
+        console.log('---type---',typeof props.walletHandle);
+
+
+        console.log('---prover_link_secret_name---',prover_link_secret_name);
+        console.log('---type---',typeof prover_link_secret_name);
+
+
+        let master_secret_id = await indy.proverCreateMasterSecret(WH, prover_link_secret_name);
+        console.log('---master_secret_id---',master_secret_id);
+        console.log('---type---',typeof master_secret_id);
+
+        props.setMasterSecret(master_secret_id);
+
+        await AsyncStorage.setItem('@MasterSecretID', master_secret_id);
+        console.log('---createMasterSecret END---');
+        
+      }
+
+
+
+    } catch(error){
+      console.log(error);
+    }
+  }
+  
+  // indy sdk control - first login / not first login
   const initPoolandWallet = async () => {
-    // const walletName = {id: data.id};
-    // const walletCredentials = {key: data.pw};
-    
-    // let walletInfo = AsyncStorage.getItem('WalletInfo');
-    // const isWalletExist = walletInfo === null ? false : true;
-
     if(isFirstLogin){
       console.log('------create pool & wallet-----');
       await createPool();
       await openPool();
       await createWallet();
       await openWallet();
+      await createMasterSecret();
     }else{
       console.log('------not create pool & wallet-----');
       await openPool();
       await openWallet();
+      await createMasterSecret();
+
     }
   }
 
 
-  // login control
+  // login request
   const requestLogin = async () => {
     const configurationObject = {
       method: 'post',
@@ -210,13 +252,12 @@ const LoginScreen = (props) => {
     const response = await axios(configurationObject);
     if(response.data !== undefined){
       await initPoolandWallet().then(()=>{
-        setIsLoading(false);
+        console.log('request last step');
+        console.log('response.accessTolen',response.data.accessToken);
+
         props.setLoginToken(response.data.accessToken);
+        
         AsyncStorage.setItem('@userToken' , JSON.stringify(response.data.accessToken));
-        AsyncStorage.setItem('@userInfo' , JSON.stringify({
-          username:'sbadmin@gmail.com',
-          password:'12345678'
-        }));
       });
     }
   };
@@ -224,7 +265,6 @@ const LoginScreen = (props) => {
   const onPressLogin = () => {
     try{
       setIsLoading(true);
-
       requestLogin();
     }catch(error){
       console.log('error', error);
@@ -281,6 +321,7 @@ const LoginScreen = (props) => {
     return(
       <View style={styles.loadingWrap}>
         <ActivityIndicator size='large'></ActivityIndicator>
+        <Text style={styles.loadingText}>初始化錢包</Text>
       </View>
     )
   }
@@ -301,6 +342,8 @@ const LoginScreen = (props) => {
         </View>
         <Animatable.View
           animation="lightSpeedIn"
+          duration={1000} 
+          delay={100}
           style={styles.logoTextWrap}>
           <Text style={styles.logoText}>Snowbridge</Text>
         </Animatable.View>
@@ -341,7 +384,7 @@ const LoginScreen = (props) => {
               />
             </View>
             <View style={styles.passwordInputIcon}>                
-              <TouchableOpacity  onPress={onPwIconPress}>
+              <TouchableOpacity onPress={onPwIconPress}>
                 <Ionicons 
                   name = {passwordShow ? 'md-eye' : 'md-eye-off'}
                   size={25} 
@@ -355,6 +398,7 @@ const LoginScreen = (props) => {
           >
             <Text>Login</Text>
           </TouchableOpacity>
+
         </View>
       {/* </Animatable.View> */}
       </View>
@@ -383,8 +427,12 @@ const styles = StyleSheet.create({
     flex:1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 200
   },
+  loadingText:{
+    marginTop:10,
+    fontSize:20,
+    color:'black'
+  },  
   logoWrap:{
     flex:2,
     alignItems: 'center',
@@ -411,7 +459,6 @@ const styles = StyleSheet.create({
   },
   logoTextWrap:{
     flex: 1,
-
   },
   logoText:{
     color:'white',
@@ -448,7 +495,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     flexDirection: 'row',
     marginBottom: 25
-
   },  
 
   idIinput:{
@@ -485,8 +531,13 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {  
   return {
-      loginToken: state.loginToken
+      loginToken: state.loginToken,
+      walletHandle: state.walletHandle,
+      poolHandle: state.poolHandle,
+      masterSecret: state.masterSecret,
+
+
   };
 }
 
-export default connect(mapStateToProps, {setLoginToken})(LoginScreen);
+export default connect(mapStateToProps, {setLoginToken, setWalletHandle, setPoolHandle, setMasterSecret})(LoginScreen);

@@ -6,7 +6,7 @@ import { LogBox, StyleSheet } from "react-native"
 import {connect} from 'react-redux';
 
 import { NavigationContainer, TabActions, useFocusEffect } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -24,8 +24,8 @@ import LogoutScreen from './screens/Login/LogoutScreen';
 
 // Wallet
 import Form from './screens/Wallet/Form';
-import CredentialListScreen from './screens/Wallet/CredentialListScreen';
-import CredentialDetailScreen from './screens/Wallet/CredentialDetailScreen';
+import CredentialList from './screens/Wallet/CredentialList';
+import CredentialDetail from './screens/Wallet/CredentialDetail';
 
 //-----暫時:記得改掉----
 import CredentialDetailCheck from './screens/Wallet/CredentialDetailCheck';
@@ -43,7 +43,7 @@ import CertificateHistoryScreen from './screens/Certificate/CertificateHistorySc
 import CertificateHistoryDetailScreen from './screens/Certificate/CertificateHistoryDetailScreen';
 
 // common
-import ScanScreen from './screens/Certificate/ScanScreen';
+import Scan from './screens/Certificate/Scan';
 import Loading from './screens/Loading';
 import {Colors} from './components/common/Colors'
 
@@ -74,7 +74,7 @@ const App = (props) => {
   LogBox.ignoreLogs(ignoreWarns);
 
 
-  const Tab = createBottomTabNavigator();
+  // const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
   const Drawer = createDrawerNavigator();
   // const AuthContext = createContext();
@@ -217,8 +217,8 @@ const App = (props) => {
             (<Stack.Screen name='RootStackScreen' component={RootStackScreen} options={{headerShown: false}}></Stack.Screen>)
           } 
           {/* Wallet */}
-          <Stack.Screen name='CredentialList' component={CredentialListScreen} ></Stack.Screen>
-          <Stack.Screen name='CredentialDetail' component={CredentialDetailScreen} ></Stack.Screen>
+          <Stack.Screen name='CredentialList' component={CredentialList} ></Stack.Screen>
+          <Stack.Screen name='CredentialDetail' component={CredentialDetail} ></Stack.Screen>
           <Stack.Screen name='Form' component={Form} ></Stack.Screen>
           <Stack.Screen name='CredentialDetailCheck' component={CredentialDetailCheck} ></Stack.Screen>
 
@@ -232,14 +232,9 @@ const App = (props) => {
 
           {/* Common */}
           <Stack.Screen name='Loading' component={Loading} ></Stack.Screen>
-          <Stack.Screen name='Scan' component={ScanScreen} options={{headerShown: false}}></Stack.Screen>
+          <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
           <Stack.Screen name='Success' component={SuccessScreen} ></Stack.Screen>
 
-
-
-
-          
-          
           {/* <Stack.Screen name='SelectDefinition' component={SelectDefinitionScreen} ></Stack.Screen> */}
 
           {/* Certificate */}

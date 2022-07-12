@@ -78,7 +78,7 @@ const LoadingComponent = (props) => {
     // props.nv.reset({
     //   routes: [{name: "Home"}]
     // });
-    props.nv.navigate('CredentialDetail', {from:'getCredential'})
+    props.nv.navigate('CredentialDetail', {from:'GetCredential'})
     // props.nv.navigate('Home')
 
 
@@ -88,7 +88,7 @@ const LoadingComponent = (props) => {
         {name:'DrawerContainer'},
         {
         name: "CredentialDetail",
-        params:{from:'getCredential'}
+        params:{from:'GetCredential'}
         }
       ]
     });

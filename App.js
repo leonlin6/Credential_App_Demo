@@ -19,7 +19,7 @@ import indy from 'indy-sdk-react-native';
 import anoncreds from 'indy-sdk-react-native';
 import RNFS from 'react-native-fs';
 import { NavigationContainer, TabActions, useFocusEffect } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 // Login Page
@@ -32,7 +32,7 @@ import axios from 'axios';
 
 const App = (props) => {
 
-  const Tab = createBottomTabNavigator();
+  // const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
   const Drawer = createDrawerNavigator();
 
@@ -52,7 +52,7 @@ const App = (props) => {
   let poolHandle;
   let walletHandle;
   let prover_did = 'VsKV7grR1BUE29mG2Fm2kX';
-  let schema_id;
+  let cred_def_id;
   let cred_offer_json;
   let cred_def_json;
   let prover_link_secret_name = 'link_secret234';
@@ -110,7 +110,7 @@ const App = (props) => {
           console.log('------credentialInfo-----',credentialInfo);
           cred_offer_json = JSON.parse(credentialInfo.cred_offer);
           cred_id = credentialInfo.credential;
-          schema_id = credentialInfo.credentialTemplate.credentialDefinition.cred_def_id;
+          cred_def_id = credentialInfo.credentialTemplate.credentialDefinition.cred_def_id;
        })
     }catch(error){
       console.log('error', error);
@@ -259,7 +259,15 @@ const App = (props) => {
 
   const createMasterSecret = async () => {
     try{
-      let secret_id = await indy.proverCreateMasterSecret(walletHandle, prover_link_secret_name)
+      console.log('-----walletHandle------',walletHandle);
+      console.log('-----type------',typeof walletHandle);
+
+      console.log('-----prover_link_secret_name------',prover_link_secret_name);
+      console.log('-----type------',typeof prover_link_secret_name);
+
+      let secret_id = await indy.proverCreateMasterSecret(walletHandle, prover_link_secret_name);
+      console.log('-----secret_id------',secret_id);
+
     } catch(error){
       console.log(error);
     }
@@ -270,10 +278,10 @@ const App = (props) => {
     try{
       console.log('-----getDefinitionReq----')
       let parsedData;
-      console.log('schema_id',schema_id);
+      console.log('cred_def_id',cred_def_id);
 
-      //(prover_did, schema_id)
-      let response = await indy.buildGetCredDefRequest('VsKV7grR1BUE29mG2Fm2kX', schema_id);
+      //(prover_did, cred_def_id)
+      let response = await indy.buildGetCredDefRequest('VsKV7grR1BUE29mG2Fm2kX', cred_def_id);
 
       console.log('response',response);
       console.log('poolHandle',poolHandle);
@@ -294,6 +302,11 @@ const App = (props) => {
 
 
   const CreateCredentialReq = async () => {
+    console.log('walletHandle', walletHandle);
+    console.log('prover_did', prover_did);
+    console.log('cred_offer_json', cred_offer_json);
+    console.log('cred_def_json', cred_def_json);
+    console.log('prover_link_secret_name', prover_link_secret_name);
     const reqResponse = await indy.proverCreateCredentialReq(walletHandle, prover_did, cred_offer_json, cred_def_json, prover_link_secret_name);
 
     // console.log('walletHandle', walletHandle);
@@ -455,6 +468,9 @@ const App = (props) => {
             <Button title="getCredFromWallet" onPress={getCredFromWallet} />
           </View>   */}
           <View style={styles.sectionContainer}>
+            <Button title="Open wallet" onPress={openWallet} />
+          </View>
+          <View style={styles.sectionContainer}>
             <Button title="initial" onPress={initial} />
           </View>  
           <View style={styles.sectionContainer}>
@@ -463,6 +479,17 @@ const App = (props) => {
           <View style={styles.sectionContainer}>
             <Button title="getWalletCredentials" onPress={getWalletCredentials} />
           </View>  
+
+          <View style={styles.sectionContainer}>
+            <Button title="Create wallet" onPress={createWallet} />
+          </View>
+
+          <View style={styles.sectionContainer}>
+            <Button title="createPool" onPress={createPool} />
+          </View>
+          <View style={styles.sectionContainer}>
+            <Button title="createMasterSecret" onPress={createMasterSecret} />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -473,11 +500,12 @@ const App = (props) => {
     <>
       <NavigationContainer>  
         <Stack.Navigator>
-          {props.loginToken !== null ? 
+        <Stack.Screen name='ButtonArea' component={ButtonArea} options={{headerShown: false}}></Stack.Screen>
+          {/* {props.loginToken !== null ? 
             (<Stack.Screen name='ButtonArea' component={ButtonArea} options={{headerShown: false}}></Stack.Screen>)
             : 
             (<Stack.Screen name='RootStackScreen' component={RootStackScreen} options={{headerShown: false}}></Stack.Screen>)
-          } 
+          }  */}
         </Stack.Navigator>
       </NavigationContainer>
     </>
