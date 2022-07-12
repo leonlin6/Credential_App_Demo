@@ -109,7 +109,8 @@ const Loading = (props) => {
         {
           name: "CredentialDetail",
           params:{
-            from:'getCredential'
+            from:'GetCredential',
+            mergedDetailData: props.route.params.mergedDetailData
           }
         }
       ]

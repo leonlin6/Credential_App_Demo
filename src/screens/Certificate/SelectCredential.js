@@ -16,6 +16,8 @@ const SelectCredential = (props) => {
   const [displayTypeIcon, setDisplayTypeIcon] = useState('reader');
   const [data, setData] = useState({test:1234});
   const [walletHandle , setWalletHandle] = useState('');
+
+  
   const onChangeText = () => {
       
   }
