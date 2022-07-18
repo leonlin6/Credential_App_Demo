@@ -8,7 +8,7 @@ import {connect} from 'react-redux';
 import { NavigationContainer, TabActions, useFocusEffect } from '@react-navigation/native';
 // import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createDrawerNavigator,  DrawerContentScrollView,  DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
@@ -28,7 +28,9 @@ import CredentialList from './screens/Wallet/CredentialList';
 import CredentialDetail from './screens/Wallet/CredentialDetail';
 
 //-----暫時:記得改掉----
-import CredentialDetailCheck from './screens/Wallet/CredentialDetailCheck';
+import GetCredentialCheck from './screens/Wallet/GetCredentialCheck';
+import VerifySelectCredDetail from './screens/Certificate/VerifySelectCredDetail';
+
 
 
 // Certificate
@@ -43,8 +45,7 @@ import CertificateHistoryScreen from './screens/Certificate/CertificateHistorySc
 import CertificateHistoryDetailScreen from './screens/Certificate/CertificateHistoryDetailScreen';
 
 // common
-import Scan from './screens/Certificate/Scan';
-import Loading from './screens/Loading';
+import Scan from './screens/Wallet/Scan';
 import {Colors} from './components/common/Colors'
 
 
@@ -81,10 +82,16 @@ const App = (props) => {
 
   const [showAuthDraw, setShowAuthDraw] = useState(false);
   const [showDrawerMenu, setShowDrawerMenu] = useState(false);
-
+  const [showHeader, setShowHeader] = useState(false);
 
   const onPersonalSetting = () => {
     console.log('teststes');
+  }
+
+  const onPressHistory = () => {
+    console.log('onPressHistory');
+
+    setShowHeader(true);
   }
 
   const onMenuPress = () => {
@@ -94,55 +101,13 @@ const App = (props) => {
       navigation.openDrawer();
   }
 
-  // const TabContainer = () => {
-  //   return(
-  //     <Tab.Navigator initialRouteName="Certificate"
-  //       screenOptions={({ route }) => ({
-  //         tabBarIcon: ({ focused, color, size }) => {
-  //           let iconName;
-            
-  //           if (route.name === 'Certificate') {
-  //             iconName = focused ? 'journal-sharp' : 'journal-sharp';
-  //           } else if (route.name === 'Wallet') {
-  //             iconName = focused ? 'ios-wallet' : 'ios-wallet-outline';
-  //           } 
-
-  //           // You can return any component that you like here!
-  //           return <Ionicons name={iconName} size={size} color={color} />;
-  //         },
-
-  //       })}>
-  //       <Tab.Screen name='Certificate' component={CertificateScreen}   
-  //         options={{
-  //           headerLeft: (props) => (
-  //             <TouchableOpacity style={{marginLeft:10}} onPress={onPersonalSetting}>
-  //               <Ionicons name='md-person-circle' size={45} color={Colors.puzzleBlue}></Ionicons>
-  //             </TouchableOpacity>
-  //           ),
-  //           headerTitle:'查驗',
-  //           headerTitleAlign:'center',
-  //           headerStyle:{backgroundColor:'#F2F2F2',height:70},
-  //           headerTitleStyle:{fontSize:25, fontWeight:'bold'}
-  //         }}></Tab.Screen>
-  //       <Tab.Screen name='Wallet' component={WalletScreen}   
-  //         options={{
-  //           headerLeft: (props) => (
-  //             <TouchableOpacity style={{marginLeft:10}} onPress={onPersonalSetting}>
-  //               <Ionicons name='md-person-circle' size={45} color={Colors.puzzleBlue} ></Ionicons>
-  //             </TouchableOpacity>
-  //           ),
-  //         }}></Tab.Screen>
-
-  //     </Tab.Navigator>
-  //   );
-  // }
-
 
   const DrawerContainer = () => {
     return(
-      <Drawer.Navigator initialRouteName="Wallet"
+      <Drawer.Navigator 
+        initialRouteName="Wallet"
         screenOptions={({ route }) => ({
-          headerShown:false,
+          headerShown:showHeader,
           defaultStatus:"open",
           gestureEnabled:false,
           tabBarIcon: ({ focused, color, size }) => {
@@ -180,7 +145,7 @@ const App = (props) => {
         <Drawer.Screen name='History' component={History}   
           options={{
             headerLeft: (props) => (
-              <TouchableOpacity style={{marginLeft:10}} onPress={onPersonalSetting}>
+              <TouchableOpacity style={{marginLeft:10}} onPress={onPressHistory}>
                 <Ionicons name='md-person-circle' size={45} color={Colors.puzzleBlue} ></Ionicons>
               </TouchableOpacity>
             ),
@@ -220,8 +185,10 @@ const App = (props) => {
           <Stack.Screen name='CredentialList' component={CredentialList} ></Stack.Screen>
           <Stack.Screen name='CredentialDetail' component={CredentialDetail} ></Stack.Screen>
           <Stack.Screen name='Form' component={Form} ></Stack.Screen>
-          <Stack.Screen name='CredentialDetailCheck' component={CredentialDetailCheck} ></Stack.Screen>
+          <Stack.Screen name='GetCredentialCheck' component={GetCredentialCheck} ></Stack.Screen>
+          <Stack.Screen name='VerifySelectCredDetail' component={VerifySelectCredDetail} ></Stack.Screen>
 
+          
           
           {/* Certificate */}
           <Stack.Screen name='SelectCredential' component={SelectCredential} ></Stack.Screen>
@@ -231,7 +198,6 @@ const App = (props) => {
           
 
           {/* Common */}
-          <Stack.Screen name='Loading' component={Loading} ></Stack.Screen>
           <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
           <Stack.Screen name='Success' component={SuccessScreen} ></Stack.Screen>
 

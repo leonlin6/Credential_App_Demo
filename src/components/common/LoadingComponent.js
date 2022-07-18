@@ -4,11 +4,12 @@ import {
   StyleSheet, 
   Text, 
   View, 
-  TouchableOpacity,
   Animated
 } from "react-native";
 import { Colors } from './Colors';
+import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
 import { CommonActions } from '@react-navigation/native';
+import axios from 'axios';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -24,15 +25,24 @@ const reducer = (state, action) => {
 }
 
 const LoadingComponent = (props) => {
-
   const fadeAnim1 = useRef(new Animated.Value(1)).current;
   const fadeAnim2 = useRef(new Animated.Value(0)).current;
   const fadeAnim3 = useRef(new Animated.Value(0)).current;
-  const array = [fadeAnim1, fadeAnim2 , fadeAnim3]
+  const array = [fadeAnim1, fadeAnim2 , fadeAnim3];
   const [loadingStatusText, setLoadingStatusText] = useState([]);
   const [loadingStatus, dispatch] = useReducer(reducer, 0);
   
   let timeoutLoadingStatusID = null;
+
+  useEffect(() => {
+    if(loadingStatus <= loadingStatusText.length - 1){
+      timeoutLoadingStatus();
+    }
+  });
+
+  useEffect(() => {
+    setLoadingStatusText(props.loadingStatusText);
+  },[])
 
   // Animated
   const fadeIn = (fadeAnim) => {
@@ -54,57 +64,77 @@ const LoadingComponent = (props) => {
   };
 
   // page change
-  const pageChange = () => {
-    console.log('props from', props.from);
-    if(props.from === 'VerifyCredential')
-      navigateToSuccess();
-    else
-      navigateToCredentailDetail();
-  }
+  // params (onNavigate, toPage, loadingStatusText, nv)
+  const leavePage = () => {
+    let toPage = props.toPage;
 
+    if(toPage === 'VerifyCredential'){
+      navigateToSuccess();
+    } else if(toPage === 'Wallet'){
+      navigateToWallet();
+    }else if(toPage === 'CredentialDetail'){
+      navigateToCredentailDetail();
+    }else if(toPage === 'Success'){
+      navigateToSuccess();
+    }else{
+      navigateToWallet();
+    }
+  }
 
   const navigateToSuccess = () => {
     clearTimeout(timeoutLoadingStatusID);
-
-    props.nv.navigate('Success', {from:'VerifyCredential'})
-   
-
-
+    props.nv.reset({
+      index:1,
+      routes: [
+        {
+          name:'DrawerContainer',
+          state:{
+            routes:[
+              { name: 'Certificate' }
+            ]
+          }
+        },
+        { name:'Success' }
+      ]
+    });
   }
 
   const navigateToCredentailDetail = (data) => {
+    console.log('props', props);
     clearTimeout(timeoutLoadingStatusID);
-
-    // props.nv.reset({
-    //   routes: [{name: "Home"}]
-    // });
-    props.nv.navigate('CredentialDetail', {from:'GetCredential'})
-    // props.nv.navigate('Home')
-
-
     props.nv.reset({
       index:1,
       routes: [
         {name:'DrawerContainer'},
         {
-        name: "CredentialDetail",
-        params:{from:'GetCredential'}
+          name: "CredentialDetail",
+          params:{
+            from:'GetCredential',
+            mergedDetailData: props.mergedDetailData
+          }
         }
       ]
     });
-
-    // props.nv.dispatch(
-    //   CommonActions.reset({
-    //     index: 0,
-    //     routes: [
-    //       { name: 'Home' }
-    //     ],
-    //   })
-    // );
-
-
   }
 
+  const navigateToWallet = (data) => {
+    clearTimeout(timeoutLoadingStatusID);
+    props.nv.reset({
+      index:1,
+      routes: [
+        {
+          name:'DrawerContainer',
+          state:{
+            routes:[
+              {
+                name: 'Wallet'
+              }
+            ]
+          }
+        },
+      ]
+    });
+  }
 
   const timeoutLoadingStatus = () => {
     timeoutLoadingStatusID = setTimeout(() => {
@@ -117,22 +147,40 @@ const LoadingComponent = (props) => {
         fadeIn(array[loadingStatus+1]);
 
       if(loadingStatus === loadingStatusText.length - 1){
-        pageChange();
+        leavePage();
       }
 
     }, 3000);
   }
 
-  useEffect(() => {
-    if(loadingStatus <= loadingStatusText.length - 1){
-      timeoutLoadingStatus();
-    }
-  });
+  //call API to get current proccessing status
+  const getCurrentStatus = async () => {
+    try{
+      const configurationObject = {
+        method: 'put',
+        baseURL: ENDPOINT_BASE_URL,
+        url: `api/v1/credential/${INITIAL_STATE.cred_id}/download`,
+        headers:{
+          'authorization':`Bearer ${props.loginToken}`,
+          'Content-Type':'application/json'
+        },
+        data:{
+          value: mergedDetailData,
+          cred_req_json:JSON.stringify(INITIAL_STATE.cred_req_json)
+        }
+      };
 
-  useEffect(() => {
-    // console.log('status', props.loadingStatusText);
-    setLoadingStatusText(props.loadingStatusText);
-  },[])
+
+      await axios(configurationObject)
+      .then((response) => {
+        console.log('download credential', response.data.cred_json);
+        INITIAL_STATE.cred_json = response.data.cred_json;
+      })
+
+    }catch(error){
+      console.log('error', error);
+    }
+  }
 
   const animatedText = loadingStatusText.map((item, index) => {
     return(
@@ -141,7 +189,7 @@ const LoadingComponent = (props) => {
       </Animated.View>
     )
   });
-
+  
   return(
     <View style={styles.container}>
       <View>
@@ -152,19 +200,23 @@ const LoadingComponent = (props) => {
   );
 }
 
+
 const styles = StyleSheet.create({
-  container: {
+  container:{
     flex:1,
+    padding:20,
     justifyContent: "center",
+
   },
   text:{
     color:Colors.loadingTextLightBlue,
-    textAlign:'center'
+    textAlign:'center',
+    fontSize:20
   },
   textArea: {
     position: 'absolute', top: 100, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
   }
-  });
-  
+
+});
 
 export default LoadingComponent;

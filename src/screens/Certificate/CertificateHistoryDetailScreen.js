@@ -58,13 +58,10 @@ const CertificateHistoryDetailScreen = (props) => {
 
   const onVerify = () => {
     setModalVisible(!modalVisible);
-    
   }
 
   const onVerifiedHistory = () => {
     setModalVisible(!modalVisible);
-
-    
   }
 
   //Dialog control

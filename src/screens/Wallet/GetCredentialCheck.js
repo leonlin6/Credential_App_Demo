@@ -18,11 +18,16 @@ import axios from 'axios';
 // redux
 import {connect} from 'react-redux';
 import { initializeRegistryWithDefinitions } from 'react-native-animatable';
+import LoadingComponent from '../../components/common/LoadingComponent';
 
 
 
-const CredentialDetailCheck = (props) => {
-  const INITIAL_STATE = {
+const GetCredentialCheck = (props) => {
+  const loadingStatusText = ['正在等待建立憑證', '正在等待憑證發送','已成功將憑證存至錢包中'];
+  let prover_did = 'VsKV7grR1BUE29mG2Fm2kX';
+  let prover_link_secret_name = 'link_secret234';
+
+  let INITIAL_STATE = {
       walletHandle: props.walletHandle, 
       poolHandle: props.poolHandle,
       cred_offer_json: props.route.params.cred_offer_json,
@@ -39,48 +44,15 @@ const CredentialDetailCheck = (props) => {
       cred_json: "0",
   };
 
-let returnArray = [];
-  // const reducer = (state, action) => {
-  //   switch (action.type) {
-  //     case "CHANGE_CRED_DEF":
-  //       return {
-  //         ...state,
-  //         cred_def_json: action.payload
-  //       };
-
-  //     case "CHANGE_CRED_REQ":
-  //       return newVariable;
-  //     case "CHANGE_CRED_METADATA":
-  //       return newVariable;
-  //     case "CHANGE_CRED":
-  //       return newVariable;
-  //     default:
-  //       throw new Error(`不存在的 action type: ${action.type}`);
-  //   }
-  // };
-
   const [fromPage, setFromPage] = useState('VerifyCertificationScan');
-  const [showLoading, setShowLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(false);
+  const [showInitLoading, setShowInitLoading] = useState(true);
   const [mergedDetailData, setMergedDetailData] = useState();
 
 
-  // const [credInfoState, dispatch] = useReducer(reducer, INITIAL_STATE);
-
-  let prover_did = 'VsKV7grR1BUE29mG2Fm2kX';
-  let prover_link_secret_name = 'link_secret234';
-
-
-
-  //only for test
-  //  let detailData = {
-  //   '憑證名稱': '雪喬公司大門通行證',
-  //   '發證時間': '2022/04/06 16:02:25',
-  //   '發證單位': 'Snowbridge',
-  //  }
-
   useEffect(()=>{
     const loadingTimeout = setTimeout(()=>{
-      setShowLoading(false);
+      setShowInitLoading(false);
     },
     500);
 
@@ -115,7 +87,6 @@ let returnArray = [];
 
       mergedWriteAttributes.forEach((item)=>{
         arrayData.push(item);
-
       });
 
       onlyDisplayAttributes.forEach((item)=>{
@@ -140,7 +111,7 @@ let returnArray = [];
   }
 
   // 1
-  const getDefinitionReq = async () => {
+  const getDefinition = async () => {
     try{
 
       console.log('====start get definition req=====');
@@ -180,11 +151,9 @@ let returnArray = [];
   const CreateCredentialReq = async () => {
 
     console.log('========CreateCredentialReq start=======');
-
     console.log('---walletHandle---', INITIAL_STATE.walletHandle);
     console.log('---cred_offer_json---', INITIAL_STATE.cred_offer_json);
     console.log('---prover_did---', prover_did);
-
     console.log('---cred_def_json---', INITIAL_STATE.cred_def_json);
     console.log('--masterSecret---', INITIAL_STATE.masterSecret);
 
@@ -259,28 +228,25 @@ let returnArray = [];
     } catch(error){
       console.log(error);
     }
-  
   }
-
-
 
   const onGetCredential = async () => {
     setShowLoading(true);
     //download cred handle
-    await getDefinitionReq();
+    await getDefinition();
     await CreateCredentialReq();
     await submit();
-    await saveCredential();
+    // await saveCredential();
 
-    props.navigation.navigate({
-      name:'Loading',
-      params:{
-        loadingStatusText : ['正在等待建立憑證', '正在等待憑證發送','已成功將憑證存至錢包中'],
-        from:'GetCredential',
-        toPage:'CredentialDetail',
-        mergedDetailData: mergedDetailData
-      }
-    });
+    // props.navigation.navigate({
+    //   name:'Loading',
+    //   params:{
+    //     loadingStatusText : ['正在等待建立憑證', '正在等待憑證發送','已成功將憑證存至錢包中'],
+    //     from:props.route.params.from,
+    //     toPage:'CredentialDetail',
+    //     mergedDetailData: mergedDetailData
+    //   }
+    // });
   }
 
 
@@ -300,34 +266,45 @@ let returnArray = [];
     })
     return list;
   }
-  
+
   //render page
   return (
     <View style={{flex:1}}>
     {
       showLoading === true ? (
-        <View style={[styles.container,{justifyContent:'center'}]}>
-          <ActivityIndicator size="large" />
-        </View>      
+        <LoadingComponent 
+          loadingStatusText={loadingStatusText} 
+          from={props.route.params.from} 
+          toPage='CredentialDetail' 
+          mergedDetailData={mergedDetailData}
+          nv={props.navigation}/>
       )
       :
       (
-        <View style={styles.container}>
-          <View style={styles.imageArea}>
-            <Image style={styles.image} resizeMode={'contain'} source={require('../../assets/images/logo.png')}></Image>
+        showInitLoading === true ? (
+          <View style={[styles.container,{justifyContent:'center'}]}>
+            <ActivityIndicator size="large" />
+          </View>      
+        )
+        :
+        (
+          <View style={styles.container}>
+            <View style={styles.imageArea}>
+              <Image style={styles.image} resizeMode={'contain'} source={require('../../assets/images/logo.png')}></Image>
+            </View>
+            <View style={styles.detailArea}>
+              <ScrollView persistentScrollbar={true} >
+                <DetailList></DetailList>
+              </ScrollView>
+            </View>
+            <View style={styles.buttonArea}>
+              <TouchableOpacity onPress={onGetCredential} style={styles.btn}>
+                  <Ionicons name='ios-archive-outline' size={60} ></Ionicons>
+                  <Text>領取此憑證</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.detailArea}>
-            <ScrollView persistentScrollbar={true} >
-              <DetailList></DetailList>
-            </ScrollView>
-          </View>
-          <View style={styles.buttonArea}>
-            <TouchableOpacity onPress={onGetCredential} style={styles.btn}>
-                <Ionicons name='ios-archive-outline' size={60} ></Ionicons>
-                <Text>領取此憑證</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        )
       )
     }
     </View>
@@ -418,4 +395,4 @@ const mapStateToProps = (state) => {
   };
 }
 
-export default connect(mapStateToProps)(CredentialDetailCheck);
+export default connect(mapStateToProps)(GetCredentialCheck);

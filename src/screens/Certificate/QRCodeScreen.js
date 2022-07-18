@@ -1,55 +1,81 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { 
   View, 
-  TextInput, 
   StyleSheet, 
   TouchableOpacity,
   Text,
-  ScrollView,
-  Animated,
   Image
 } from 'react-native';
-import { Switch } from '@rneui/themed';
-import { Dropdown } from 'react-native-element-dropdown';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
-
-import {Colors} from '../../components/common/Colors';
-import * as Animatable from 'react-native-animatable';
+import LoadingComponent from '../../components/common/LoadingComponent';
 
 const QRCodeScreen = (props) => {
   const loadingStatusText = ['正在等待對方選擇憑證', '正在驗證憑證...'];
+  const [showLoading, setShowLoading] = useState(false);
 
-  const onLoadingShow = () => {
-    props.navigation.navigate({
-      name:'Loading',
-      params:{
-        loadingStatusText : loadingStatusText,
-        from:'QRCertificate',
-        toPage:'Success'
-      }
+
+  useEffect(() => {
+    console.log('showLoading',showLoading);
+  });
+
+  const onNavigate = () => {
+    props.navigation.reset({
+      index:1,
+      routes: [
+        {
+          name:'DrawerContainer',
+          state:{
+            routes:[
+              { name:'Certificate' }
+            ]
+          }
+        },
+        { name:'Success' }
+      ]
     });
+
+    // props.navigation.navigate({
+    //   name:'Loading',
+    //   params:{
+    //     loadingStatusText : loadingStatusText,
+    //     from:'QRCertificate',
+    //     toPage:'Success'
+    //   }
+    // });
   }
   
+  // render page
   return (
-    <View style={{flex:1}}>
-      <View style={styles.container}>
-        <View style={styles.QRArea}>
-          <TouchableOpacity
-            style={styles.contentBtn}
-            onPress={onLoadingShow}>
-            <Image
-                style={styles.logo}
-                source={require('../../assets/images/QR_Code_Logo.png')}
-            ></Image>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.footer}>
-          <Text style={styles.info}>掃描此QR Code以查驗執照</Text>
-          <Text style={styles.expiredDate}>有效期限：2022/07/08</Text>
-        </View>
+      <View style={{flex:1}}>
+      {
+        showLoading === true ? 
+        (
+          <LoadingComponent 
+            onNavigate={onNavigate} 
+            toPage='Success' 
+            loadingStatusText={loadingStatusText} 
+            nv={props.navigation}/>
+        )
+        :
+        (
+          <View style={styles.container}>
+            <View style={styles.QRArea}>
+              <TouchableOpacity
+                style={styles.contentBtn}
+                onPress={()=>{setShowLoading(true)}}>
+                <Image
+                    style={styles.logo}
+                    source={require('../../assets/images/QR_Code_Logo.png')}
+                ></Image>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.footer}>
+              <Text style={styles.info}>掃描此QR Code以查驗執照</Text>
+              <Text style={styles.expiredDate}>有效期限：2022/07/08</Text>
+            </View>
+          </View>
+        )
+      }
       </View>
-    </View>
   );
 }
 
@@ -75,10 +101,6 @@ const styles = StyleSheet.create({
     marginBottom:20,
     color:'#2196f3',
     fontSize:20
-  },
-  buttonText:{
-    textAlign:'center',
-
   },
   footer:{
       flex:1,

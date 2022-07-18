@@ -58,7 +58,7 @@ const CredentialList = (props) => {
           data={credData} 
           displayType={displayType} 
           navigation={props.navigation} 
-          toPageType={'CredentialDetail'}
+          toPage={'CredentialDetail'}
           from={props.route.params.from}
         > 
         </ListComponent>

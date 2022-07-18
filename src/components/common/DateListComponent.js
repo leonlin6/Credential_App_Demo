@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { ListItem } from '@rneui/themed'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const ListComponent = (props) => {
+const DateListComponent = (props) => {
   const [list , setList] = useState([]);
 
   //現在收陣列資料
@@ -17,57 +18,23 @@ const ListComponent = (props) => {
   },[props.data]);
 
 
-  // toPage: DefinitionDetail、CredentialDetail
-  const onPressItem = (itemData) => {
-    // let toPage = '';
-
-    // switch(props.from)
-    // {
-    //   case '':
-    //     return;
-    //   case '':
-    //     return; 
-    //   case '':
-    //     return;               
-    //   default:
-    //     return;
-    // }
-
+  // pageType: DefinitionDetail、CredentialDetail
+  const onPressItem = (item) => {
+    console.log('===slectCredentialData', item);
     props.navigation.navigate({
       name:props.toPage,
       params:{
         from:props.from,
-        credData:itemData
+        credData:item
       }
     })
   }
 
-const listContent = props.displayType === 'card' ? (
-    <ScrollView style={styles.scrollView}>
-      {
-        list.length === 0 ? 
-        (
-          null
-        )
-        :
-        (
-          list.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
-              <View style={styles.dateArea}>
-                  <Text style={styles.dateText}>2022/06/06</Text>
-              </View>
-              <View style={styles.nameArea}>
-                  <Text style={styles.credentialName}>{item.cred_def_id}</Text>
-              </View>                    
-            </TouchableOpacity>     
-          ))
-        )
-      }                     
-    </ScrollView>
-  )  
-  :
+  const listContent = 
   (
-    <View>
+    <View style={{paddingHorizontal:20}}>
+      <Text style={{fontSize:30}}> 2022</Text>
+
       {
         list[0] === null ? 
         (
@@ -78,6 +45,7 @@ const listContent = props.displayType === 'card' ? (
           list.map((item, index) => (
             <TouchableOpacity key={index} onPress={()=>{onPressItem(item)}} >      
               <ListItem topDivider bottomDivider>
+                <Ionicons name="search" size={30} color='black'></Ionicons>
                 <ListItem.Content>
                     <ListItem.Title>
                       {item.cred_def_id}
@@ -93,6 +61,7 @@ const listContent = props.displayType === 'card' ? (
       }
     </View>
   )
+
   return listContent;
 }
 
@@ -130,7 +99,7 @@ const styles = StyleSheet.create({
     flex:1
   },
   listArea:{
-    flex:5,
+    flex:8,
 
   },
   card:{
@@ -168,4 +137,4 @@ const styles = StyleSheet.create({
 });
   
 
-export default ListComponent;
+export default DateListComponent;
