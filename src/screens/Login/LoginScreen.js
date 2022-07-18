@@ -52,7 +52,6 @@ const LoginScreen = (props) => {
   useEffect(() => {
     const determineFirstLogin = async () => {
       const isWalletExist = await AsyncStorage.getItem('@HasWallet');
-console.log('isWalletExist',isWalletExist);
       if(isWalletExist === 'true'){
         isFirstLogin = false;
       }

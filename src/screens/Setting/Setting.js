@@ -13,7 +13,7 @@ import {LocaleConfig} from 'react-native-calendars';
 const Setting = (props) => {
 
     const onSubmit = () => {
-        props.navigation.navigate('CredentialDetailCheck');
+        props.navigation.navigate('GetCredentialCheck');
     }
 
     return (

@@ -274,9 +274,9 @@ const App = (props) => {
   }
 
   
-  const getDefinitionReq = async () => {
+  const getDefinition = async () => {
     try{
-      console.log('-----getDefinitionReq----')
+      console.log('-----getDefinition----')
       let parsedData;
       console.log('cred_def_id',cred_def_id);
 
@@ -395,7 +395,7 @@ const App = (props) => {
   }
 
   const handleRequest = async () => {
-    await getDefinitionReq();
+    await getDefinition();
     await CreateCredentialReq();
     await submit();
     await saveCredential();
@@ -452,7 +452,7 @@ const App = (props) => {
             <Button title="createMasterSecret" onPress={createMasterSecret} />
           </View>
           <View style={styles.sectionContainer}>
-            <Button title="getDefinitionReq" onPress={getDefinitionReq} />
+            <Button title="getDefinition" onPress={getDefinition} />
           </View>
           <View style={styles.sectionContainer}>
             <Button title="CreateCredentialReq" onPress={CreateCredentialReq} />

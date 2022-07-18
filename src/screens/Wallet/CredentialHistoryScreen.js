@@ -41,7 +41,7 @@ const CredentialHistoryScreen = (props) => {
           data={data} 
           displayType={'list'} 
           navigation={props.navigation} 
-          toPageType={'CredentialHistoryDetail'}
+          toPage={'CredentialHistoryDetail'}
           from={props.route.params.from}
         > 
         </ListComponent>

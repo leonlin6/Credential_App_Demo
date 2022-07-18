@@ -156,10 +156,10 @@ const Wallet = (props) => {
     <View style={styles.container} >
       <View style={styles.menuArea}>
         <View style={styles.menu}>
-            <TouchableOpacity style={styles.image} onPress={onMenuPress}>
-              <Ionicons name='menu' size={50}></Ionicons>
-            </TouchableOpacity>
-          </View> 
+          <TouchableOpacity style={styles.image} onPress={onMenuPress}>
+            <Ionicons name='menu' size={50}></Ionicons>
+          </TouchableOpacity>
+        </View> 
       </View>
       <View style={styles.scanArea}>
         <TouchableOpacity style={styles.image}  onPress={onScanPress}>

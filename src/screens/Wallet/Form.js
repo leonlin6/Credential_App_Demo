@@ -18,7 +18,6 @@ const Form = (props) => {
 
     useEffect(() => {
         try{
-
             let credFormat = props.route.params.credentialInfo.credentialTemplate.credentialDefinition.format;
             let credValue = props.route.params.credentialInfo.credentialTemplate.value;
 
@@ -54,14 +53,15 @@ const Form = (props) => {
 
     const onSubmit = () => {
         props.navigation.navigate({
-            name:'CredentialDetailCheck',
+            name:'GetCredentialCheck',
             params:{
                 mergedWriteAttributes: mergedWriteAttributes,
                 onlyDisplayAttributes:onlyDisplayAttributes,
                 credentialInfo: props.route.params.credentialInfo,
                 cred_offer_json: props.route.params.cred_offer_json,
                 cred_id: props.route.params.cred_id,
-                cred_def_id: props.route.params.cred_def_id
+                cred_def_id: props.route.params.cred_def_id,
+                from:props.route.params.from
             }
         });
     }

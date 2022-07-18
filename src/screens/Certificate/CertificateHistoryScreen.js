@@ -42,7 +42,7 @@ const CertificateHistoryScreen = (props) => {
           data={data} 
           displayType={'list'} 
           navigation={props.navigation} 
-          toPageType={'CertificateHistoryDetail'}
+          toPage={'CertificateHistoryDetail'}
           from={props.route.params.from}
         > 
         </ListComponent>

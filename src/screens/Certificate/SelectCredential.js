@@ -2,40 +2,44 @@ import React, {useEffect, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { 
   View, 
-  TextInput, 
   StyleSheet, 
   TouchableOpacity,
   Text
 } from 'react-native';
 import ListComponent from '../../components/common/ListComponent';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {connect} from 'react-redux';
+import indy from 'indy-sdk-react-native';
+
 
 const SelectCredential = (props) => {
-  const [text, setText] = useState('');
   const [displayType, setDisplayType] = useState('card');
   const [displayTypeIcon, setDisplayTypeIcon] = useState('reader');
-  const [data, setData] = useState({test:1234});
-  const [walletHandle , setWalletHandle] = useState('');
+  const [credData, setCredData] = useState([]);
 
   
-  const onChangeText = () => {
-      
-  }
 
   useEffect(() => {
-    setWalletHandle(AsyncStorage.getItem(''));
+
+    const getCredFromWallet = async () => {
+      let response = await indy.proverGetCredentials(props.walletHandle);
+      setCredData(response);
+    console.log('----walletCred----',response);
+
+    }
+    console.log();
+    getCredFromWallet();
+
   },[])
+
 
   const onClickDisplay = () => {
     console.log(displayType);
     if(displayType === 'card'){
       setDisplayType('list');
       setDisplayTypeIcon('ios-card-outline');
-
     }else{
       setDisplayType('card');
       setDisplayTypeIcon('reader');
-
     }
   }
 
@@ -44,7 +48,7 @@ const SelectCredential = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchArea}>
-        <Text style={styles.title}>符合查驗規則的憑證</Text>
+        <Text style={styles.title}>請選擇用來查驗的憑證</Text>
         <View style={styles.displayBtn}>
           <TouchableOpacity
             style={styles.contentBtn}
@@ -55,10 +59,10 @@ const SelectCredential = (props) => {
       </View>
       <View style={styles.listArea}>
         <ListComponent 
-          data={data} 
+          data={credData} 
           displayType={displayType} 
           navigation={props.navigation} 
-          toPageType={'CredentialDetail'}
+          toPage={'VerifySelectCredDetail'}
           from={props.route.params.from}
         > 
         </ListComponent>
@@ -133,4 +137,10 @@ const styles = StyleSheet.create({
 
 });
 
-export default SelectCredential;
+const mapStateToProps = (state) => {  
+  return {
+      walletHandle: state.walletHandle,
+  };
+}
+
+export default connect(mapStateToProps)(SelectCredential);
