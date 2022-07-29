@@ -11,10 +11,16 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 import { RNCamera } from 'react-native-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// redux
 import {connect} from 'react-redux';
+// actions
+import {setProofReq, setVerifyId} from '../../actions/index'
+
+//API
 import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
+import axios from 'axios';
 
 
 const Scan = (props) => {
@@ -22,6 +28,9 @@ const Scan = (props) => {
   let cred_offer_json;
   let cred_id;
   let cred_def_id;
+
+  let verifyId;
+  let verifyTemplate;
 
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -32,28 +41,63 @@ const Scan = (props) => {
   const [isUserWriteExist, setIsUserWriteExist] = useState(true);
 
   useEffect(()=>{
-    console.log('====into effect====');
     setIsShowLoading(false);
   },[])
   
   const onSuccessLoad = async (e) => {
+    console.log('---e---',e);
+    await getCredentialInfo(e.data);
+
+    // use for test
+    if(isGetCredential){
+      // props.navigation.navigate({
+      //   name:'Form',
+      //   params:{
+      //     from:'GetCredential',
+      //     credentialInfo:credentialInfo,
+      //     cred_offer_json:cred_offer_json,
+      //     cred_id:cred_id,
+      //     cred_def_id:cred_def_id,
+      //   }
+      // });
+    }else{
+      // props.navigation.navigate({
+      //   name:'SelectCredential',
+      //   params:{
+      //     from:'CertificateCredential'
+      //   }
+      // });
+    }
   }
 
-  const getCredentialInfo = async () => {
+  const getCredentialInfo = async (url) => {
     try{
       setIsShowLoading(true);
+      console.log('qrurl', url);
 
+
+      // const configurationObject = {
+      //   method: 'get',
+      //   url: url,
+      //   headers:{
+      //     'authorization':`Bearer ${props.loginToken}`,
+      //     'Content-Type':'application/json'
+      //   }
+      // };
+
+      //use for test
       const configurationObject = {
         method: 'get',
-        baseURL: ENDPOINT_BASE_URL,
-        url: 'api/v1/qrcode/62bc34898f48d5f246cf5979',
+        url: url,
         headers:{
           'authorization':`Bearer ${props.loginToken}`,
           'Content-Type':'application/json'
         }
       };
-       await axios(configurationObject)
-       .then((response) => {
+
+
+      await axios(configurationObject)
+      .then((response) => {
         credentialInfo = response.data;
 
         console.log('----credentialInfo---',credentialInfo);
@@ -62,12 +106,31 @@ const Scan = (props) => {
           cred_offer_json = JSON.parse(credentialInfo.cred_offer);
           cred_id = credentialInfo.credential;
           cred_def_id = credentialInfo.credentialTemplate.credentialDefinition.cred_def_id;
+          
+          props.navigation.navigate({
+            name:'Form',
+            params:{
+              from:'GetCredential',
+              credentialInfo:credentialInfo,
+              cred_offer_json:cred_offer_json,
+              cred_id:cred_id,
+              cred_def_id:cred_def_id,
+            }
+          });
+        }else if(credentialInfo.type === 11){
+          // recording data to cred detail page
+          props.setProofReq(JSON.parse(credentialInfo.verify.proof_req_json));
+          props.setVerifyId(credentialInfo.verify._id);
 
-        }else{
-          // do verify credential stuff
+
+          props.navigation.navigate({
+            name:'SelectCredential',
+            params:{
+              from:'CertificateCredential',
+              verifyTemplate : credentialInfo.verify.verifyTemplate,
+            }
+          });
         }
-
-
         setIsShowLoading(true);
        })
     }catch(error){
@@ -75,11 +138,6 @@ const Scan = (props) => {
     }
   };
 
-  //????
-  const onRead = (e) => {
-    setQRCode(e.data);
-    console.log('e= ', e);
-  }
 
   const backButton = async () => {
     // props.navigation.goBack();
@@ -108,26 +166,27 @@ const Scan = (props) => {
 
 
     // use for test
-    if(isGetCredential){
-      await getCredentialInfo();
-      props.navigation.navigate({
-        name:'Form',
-        params:{
-          from:'GetCredential',
-          credentialInfo:credentialInfo,
-          cred_offer_json:cred_offer_json,
-          cred_id:cred_id,
-          cred_def_id:cred_def_id,
-        }
-      });
-    }else{
-      props.navigation.navigate({
-        name:'SelectCredential',
-        params:{
-          from:'CertificateCredential'
-        }
-      });
-    }
+    // if(isGetCredential){
+    //   await getCredentialInfo();
+    //   props.navigation.navigate({
+    //     name:'Form',
+    //     params:{
+    //       from:'GetCredential',
+    //       credentialInfo:credentialInfo,
+    //       cred_offer_json:cred_offer_json,
+    //       cred_id:cred_id,
+    //       cred_def_id:cred_def_id,
+    //     }
+    //   });
+    // }else{
+    //   props.navigation.navigate({
+    //     name:'SelectCredential',
+    //     params:{
+    //       from:'CertificateCredential',
+    //       verify_id: verify_id
+    //     }
+    //   });
+    // }
   }
 
   // use for test
@@ -250,4 +309,4 @@ const mapStateToProps = (state) => {
   };
 }
 
-export default connect(mapStateToProps)(Scan);
+export default connect(mapStateToProps,{setProofReq, setVerifyId})(Scan);

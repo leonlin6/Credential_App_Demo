@@ -20,38 +20,38 @@ const MyRule = (props) => {
       props.navigation.openDrawer();
   }
 
-  const onSelectRule = (rule) => {
-    console.log('rule', rule);
+  const onSelectRule = (templateId, templateName) => {
     props.navigation.navigate({
       name:'RuleDetail',
       params:{
-        selectedRule:rule
+        templateId:templateId,
+        templateName: templateName
       }
     })
+  }
+
+  const Templates = () => {
+
+    const templates = props.route.params.templates.map((item, index)=>{
+      console.log('item', item);
+      return(
+        <TouchableOpacity key={`template${index}`} onPress={() => {onSelectRule(item._id, item.name)}}>
+          <View style={styles.blockBtn}>
+            <Text style={styles.btnText}>{item.name}</Text>
+            <Ionicons name='ios-chevron-forward-outline' size={30} ></Ionicons>
+          </View>
+        </TouchableOpacity>
+      )
+    })
+
+    return templates;
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>請選擇查驗規則</Text>
       <ScrollView persistentScrollbar={true}>
-        <TouchableOpacity onPress={() => {onSelectRule('幻武小學學生會')}}>
-          <View style={styles.blockBtn}>
-              <Text style={styles.btnText}>幻武小學學生會</Text>
-              <Ionicons name='ios-chevron-forward-outline' size={30} ></Ionicons>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {onSelectRule('Combuy喝到飽優惠活動')}}>
-          <View style={styles.blockBtn}>
-            <Text style={styles.btnText}>Combuy喝到飽優惠活動</Text>
-            <Ionicons name='ios-chevron-forward-outline' size={30} ></Ionicons>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {onSelectRule('雪喬股份有限公司職員')}}>
-            <View style={styles.blockBtn}>
-                <Text style={styles.btnText}>雪喬股份有限公司職員</Text>
-                <Ionicons name='ios-chevron-forward-outline' size={30} ></Ionicons>
-            </View>
-        </TouchableOpacity>
+        <Templates></Templates>
       </ScrollView>
     </View>
   );

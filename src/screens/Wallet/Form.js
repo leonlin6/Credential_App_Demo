@@ -7,7 +7,6 @@ import {
   Text,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {LocaleConfig} from 'react-native-calendars';
 
 
 const Form = (props) => {

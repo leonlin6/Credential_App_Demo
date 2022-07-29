@@ -6,10 +6,21 @@ import {
   Text,  
   StyleSheet, 
   TouchableOpacity,
+  Dimensions,
 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+//api
+import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
+import axios from 'axios';
+
+//redux
+import {connect} from 'react-redux';
+
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const Certificate = (props) => {
 
@@ -19,7 +30,7 @@ const Certificate = (props) => {
   useEffect(()=>{
     const getCurrentRule = async () => {
       try{
-        const CR = await AsyncStorage.getItem('currentRule');
+        const CR = await AsyncStorage.getItem('@CurrentRule');
         console.log('CR', CR);
         console.log('currentRule',currentRule);
         if(CR !== null)
@@ -39,12 +50,49 @@ const Certificate = (props) => {
       props.navigation.openDrawer();
   }
 
-  const onMyRulePress = () => {
-    props.navigation.navigate('MyRule');
+  const onMyRulePress = async () => {
+    const configurationObject = {
+      method: 'get',
+      baseURL: ENDPOINT_BASE_URL,
+      url: `api/v1/verify/template`,
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      }
+    };
+
+    const response = await axios(configurationObject);
+    props.navigation.navigate({
+      name:'MyRule',
+      params:{
+        templates:response.data.items
+      }
+    });
   }  
 
-  const onCertificatePress = () => {
-    props.navigation.navigate('QRCode');
+  const onCertificatePress = async () => {
+    const configurationObject = {
+      method: 'post',
+      baseURL: ENDPOINT_BASE_URL,
+      url: `api/v1/qrcode`,
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      }
+
+    };
+    const response = await axios(configurationObject);
+
+    console.log('===response===', response.data);
+
+    props.navigation.navigate({
+      name:'CertificateQR',
+      params:{
+        _id: response.data._id,
+        createdAt: response.data.createdAt,
+        updatedAt: response.data.updatedAt
+      }
+    });
   }
 
   const onCertificateHistoryPress = () => {
@@ -53,24 +101,19 @@ const Certificate = (props) => {
 
   return (
     <View style={styles.container} >
-      <View style={styles.menu}>
-        <TouchableOpacity style={styles.image} onPress={onMenuPress}>
-          <Ionicons name='menu' size={50}></Ionicons>
-        </TouchableOpacity>
-      </View>
+      <View style={{height:75}}></View>
       <TouchableOpacity onPress={onMyRulePress}>
         <View style={styles.blockBtn}>
             <Text style={styles.btnText}>我的規則</Text>
         </View>
       </TouchableOpacity>
       <TouchableOpacity onPress={onCertificatePress}>
-        <View style={styles.blockBtn}>
+        <View style={styles.blockBtn2}>
           <Text style={styles.btnText}>查驗憑證</Text>
           {
             currentRule !== '' ? 
             (
               <Text style={styles.currentRuleText}>{`現行規則：${currentRule}`}</Text>
-
             ) 
             : 
             (
@@ -84,6 +127,11 @@ const Certificate = (props) => {
             <Text style={styles.btnText}>查驗歷程</Text>
         </View>
       </TouchableOpacity>
+      <View style={styles.menu}>
+        <TouchableOpacity style={styles.image} onPress={onMenuPress}>
+          <Ionicons name='menu' size={50}></Ionicons>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -94,7 +142,6 @@ const styles = StyleSheet.create({
     fontSize: 25,
     backgroundColor:'white',
     justifyContent:'center',
-    alignItems:'center'
   },
   menu:{
     position:'absolute',
@@ -102,13 +149,22 @@ const styles = StyleSheet.create({
     left:10
   },
   blockBtn:{
-    width:300,
-    height:150,
-    backgroundColor:'#2196f3',
-    margin:20,
+
+    backgroundColor:'#eebb70',
     justifyContent:'center',
+    flexDirection:'column',
     alignItems:'center',
-    borderRadius:20
+    alignSelf: 'stretch', 
+    height:SCREEN_HEIGHT * 0.3,
+  },
+  blockBtn2:{
+    backgroundColor:'#03a9f4',
+    justifyContent:'center',
+    flexDirection:'column',
+    alignItems:'center',
+    alignSelf: 'stretch', 
+    height:300,
+    height:SCREEN_HEIGHT * 0.3,
   },
   btnText:{
     color:'white',
@@ -123,5 +179,10 @@ const styles = StyleSheet.create({
 
 });
 
+const mapStateToProps = (state) => {  
+  return {
+      loginToken: state.loginToken,
+  };
+}
 
-export default Certificate;
+export default connect(mapStateToProps)(Certificate);

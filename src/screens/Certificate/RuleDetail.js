@@ -13,22 +13,92 @@ import {
 import { ListItem, Dialog,} from '@rneui/themed'
 import {Colors} from '../../components/common/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import RulesComponent from '../../components/common/RulesComponent';
+
+//api
+import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
+import axios from 'axios';
+//redux
+import {connect} from 'react-redux';
 
 
 const RuleDetail = (props) => {
-
+  let tempList = {};
   const [showLoading, setShowLoading] = useState(true);
-  let list = {
-    '規則名稱': '雪橋公司大門通行證',
-    '查驗規則': {
-        rule1:'Age > 18',
-        rule2:'Country',
-        rule3:'Sex',
-        rule4:'Expired Date < 2022/07/30',
-    }
+  const [rulesArray, setRulesArray] = useState([]);
+  const [ruleName, setRuleName] = useState('');
+  const [list, setList] = useState('');
+
+
+
+  //處理條件
+  const handlePredicates = (predicates) => {
+    const pred = predicates.map((item) => {
+      return item;
+    })
+    tempList['predicates'] = pred;
   }
 
+
+  //處理attribute內容
+  const handleAttributes = (attributes) => {
+    const attr = attributes.map((item)=>{
+      return item;
+    })
+    tempList['attributes'] = attr;
+  }
+
+  const mergeAttribute = () => {
+    let hashTemp = {};
+    tempList.predicates.forEach((item) => {
+      hashTemp[item.name] = item;
+    })
+
+    const mergedAttribute = tempList.attributes.map((it) => {
+      if(hashTemp.hasOwnProperty(it))
+        return {
+          ...hashTemp[it],
+          hasPredicate: true
+        };
+      else{
+        return {
+          name:it,
+          hasPredicate: false
+        }
+      }
+    })
+    tempList['mergedAttribute'] = mergedAttribute;
+  }
+
+
   useEffect(()=>{
+    const requestTemplateDetail = async () => {
+      console.log('---request template detail---');
+      const configurationObject = {
+        method: 'get',
+        baseURL: ENDPOINT_BASE_URL,
+        url: `api/v1/verify/template/${props.route.params.templateId}`,
+        headers:{
+          'authorization':`Bearer ${props.loginToken}`,
+          'Content-Type':'application/json'
+        }
+      };
+  
+      const response = await axios(configurationObject);
+
+      console.log('---response.data----',response.data);
+
+
+      tempList['ruleName'] = response.data.name;
+      handleAttributes(response.data.attributes[0].attributes);
+      handlePredicates(response.data.predicates);
+      mergeAttribute();
+      console.log('--tempList---', tempList);
+      setList(tempList);
+
+    }
+
+    requestTemplateDetail();
     setTimeout(()=>{
       setShowLoading(false);
     },
@@ -38,50 +108,60 @@ const RuleDetail = (props) => {
 
 
   const onChooseRule = async () => {
+    console.log('props.route.params.selectedRule',props.route.params.templateId);
+    console.log('props.route.params.selectedRule',props.route.params.templateName);
 
-    await AsyncStorage.setItem('currentRule',  props.route.params.selectedRule);
+    const configurationObject = {
+      method: 'put',
+      baseURL: ENDPOINT_BASE_URL,
+      url: 'api/v1/user/me/verify/template',
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      },
+      data:{
+        verifyTemplateId: props.route.params.templateId
+      }
+    };
+
+    const response = await axios(configurationObject);
+    console.log('===response===', response.data);
+
+    await AsyncStorage.setItem('@CurrentRule',  props.route.params.templateName);
     props.navigation.reset({
-        index:0,
-        routes: [
-          {
-            name:'DrawerContainer',
-            state:{
-              routes:[
-                {
-                  name: 'Certificate'
-                }
-              ]
-            }
-          },
-        ]
-      });
+      index:0,
+      routes: [
+        {
+          name:'DrawerContainer',
+          state:{
+            routes:[
+              { name: 'Certificate' }
+            ]
+          }
+        },
+      ]
+    });
   }
 
   const DetailList = () => {
-    const rules = Object.keys(list['查驗規則']).map(function(keyName, keyIndex) {
-      // use keyName to get current key's name
-      // and a[keyName] to get its value
-      return(
-        <ListItem key={keyIndex} containerStyle={{backgroundColor:'#F4F4F4'}}>
+    if(typeof(list.attributes) !== 'undefined'){
+      // return to DetailList
+      return (
+        <View>
+          <ListItem containerStyle={{backgroundColor:'#F4F4F4'}}>
             <ListItem.Content>
-                <View style={styles.subtitleView}>
-                    {
-                        keyIndex === 0 ? 
-                        (
-                            <Text style={styles.key}>查驗規則</Text>
-                        )
-                        :
-                        (
-                            null
-                        )
-                    }
-                    <Text style={styles.value}>{list['查驗規則'][keyName]}</Text>
-                </View>
+              <View style={styles.subtitleView}>
+                <Text style={styles.key}>規則名稱</Text>
+                <Text style={styles.value}>{list.ruleName}</Text>
+              </View>
             </ListItem.Content>
-        </ListItem>
-      )
-    })
-    return rules;
+          </ListItem>
+          <RulesComponent list={list}></RulesComponent>
+        </View>
+      );
+    }else{
+      return null;
+    }
   }
   
   //render page
@@ -90,31 +170,23 @@ const RuleDetail = (props) => {
     {
       showLoading === true ? (
         <View style={[styles.container,{justifyContent:'center'}]}>
-            <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" />
         </View>      
       )
       :
       (
         <View style={styles.container}>
-            <View style={styles.detailArea}>
-                <ScrollView persistentScrollbar={true} >
-                    <ListItem containerStyle={{backgroundColor:'#F4F4F4'}}>
-                        <ListItem.Content>
-                            <View style={styles.subtitleView}>
-                                <Text style={styles.key}>規則名稱</Text>
-                                <Text style={styles.value}>{props.route.params.selectedRule}</Text>
-                            </View>
-                        </ListItem.Content>
-                    </ListItem>
-                    <DetailList></DetailList>
-                </ScrollView>
-            </View>
-            <View style={styles.buttonArea}>
-                <TouchableOpacity onPress={onChooseRule} style={styles.btn}>
-                    <Ionicons name='ios-pricetag' size={60} color='#2196f3'></Ionicons>
-                    <Text>選用規則</Text>
-                </TouchableOpacity>
-            </View>
+          <View style={styles.detailArea}>
+            <ScrollView persistentScrollbar={true} >
+              <DetailList></DetailList>
+            </ScrollView>
+          </View>
+          <View style={styles.buttonArea}>
+            <TouchableOpacity onPress={onChooseRule} style={styles.btn}>
+              <Ionicons name='ios-pricetag' size={60} color='#2196f3'></Ionicons>
+              <Text>選用規則</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )
     }
@@ -185,4 +257,11 @@ const styles = StyleSheet.create({
 
 });
 
-export default RuleDetail;
+
+const mapStateToProps = (state) => {  
+  return {
+      loginToken: state.loginToken,
+  };
+}
+
+export default connect(mapStateToProps)(RuleDetail);
