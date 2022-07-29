@@ -10,30 +10,70 @@ import ListComponent from '../../components/common/ListComponent';
 import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
 
+//api
+import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
+import axios from 'axios';
+import { setGestureState } from 'react-native-reanimated/lib/reanimated2/NativeMethods';
+
 
 const SelectCredential = (props) => {
+  let credsFromWallet = [];
+
   const [displayType, setDisplayType] = useState('card');
   const [displayTypeIcon, setDisplayTypeIcon] = useState('reader');
   const [credData, setCredData] = useState([]);
 
-  
-
   useEffect(() => {
+    console.log('===props.route.params===', props.route.params);
+    console.log('proofReq',props.proofReq);
+    console.log('verifyId',props.verifyId);
 
-    const getCredFromWallet = async () => {
-      let response = await indy.proverGetCredentials(props.walletHandle);
-      setCredData(response);
-    console.log('----walletCred----',response);
-
+    const initialCred = async () => {
+      await getCredFromWallet();
+      await getQualifiedCred();
     }
-    console.log();
-    getCredFromWallet();
 
+    initialCred();
   },[])
 
 
+  const getCredFromWallet = async () => {
+    console.log('---getCredFromWallet---');
+
+    let response = await indy.proverGetCredentials(props.walletHandle);
+    credsFromWallet = response;
+  }
+
+  const getQualifiedCred = async () => {
+    const configurationObject = {
+      method: 'get',
+      baseURL: ENDPOINT_BASE_URL,
+      url: `api/v1/verify/template/${props.route.params.verifyTemplate}`,
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      }
+    };
+
+    const response = await axios(configurationObject);
+    const templateAttributes = response.data.attributes[0].attributes;
+
+    // check if cred has the attrs which requested by template
+    templateAttributes.forEach((item) => {
+      credsFromWallet.forEach((it) => {
+        if(!it.attrs.hasOwnProperty(item)){
+          it['ruleNotContain'] = true;
+        }
+      })
+    })
+
+    const filteredCreds = credsFromWallet.filter((cred) => {
+      return !cred.hasOwnProperty('ruleNotContain');
+    })
+    setCredData(filteredCreds);
+  }
+
   const onClickDisplay = () => {
-    console.log(displayType);
     if(displayType === 'card'){
       setDisplayType('list');
       setDisplayTypeIcon('ios-card-outline');
@@ -62,7 +102,7 @@ const SelectCredential = (props) => {
           data={credData} 
           displayType={displayType} 
           navigation={props.navigation} 
-          toPage={'VerifySelectCredDetail'}
+          toPage={'SelectedCredDetail'}
           from={props.route.params.from}
         > 
         </ListComponent>
@@ -139,7 +179,10 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {  
   return {
+      loginToken:state.loginToken,
       walletHandle: state.walletHandle,
+      proofReq: state.proofReq,
+      verifyId: state.verifyId
   };
 }
 

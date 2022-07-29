@@ -32,3 +32,43 @@ export const setMasterSecret = (masterSecret) => {
         payload: masterSecret
     });
 } 
+
+export const setProof = (proof) => {
+    //Return an action
+    return({
+        type: 'SET_PROOF',
+        payload: proof
+    });
+} 
+
+export const setProofReq = (proofReq) => {
+    //Return an action
+    return({
+        type: 'SET_PROOF_REQ',
+        payload: proofReq
+    });
+} 
+
+export const setSchemas = (schemas) => {
+    //Return an action
+    return({
+        type: 'SET_SCHEMAS',
+        payload: schemas
+    });
+} 
+
+export const setCredDefs = (defs) => {
+    //Return an action
+    return({
+        type: 'SET_DEFS',
+        payload: defs
+    });
+} 
+
+export const setVerifyId = (id) => {
+    //Return an action
+    return({
+        type: 'SET_VERIFY_ID',
+        payload: id
+    });
+} 

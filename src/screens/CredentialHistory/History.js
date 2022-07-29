@@ -31,7 +31,7 @@ const History = (props) => {
   
   // render page
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.menuArea}>
         <View style={styles.menu}>
           <TouchableOpacity style={styles.image} onPress={onMenuPress}>
@@ -41,7 +41,8 @@ const History = (props) => {
       </View>
       <View style={styles.searchArea}>
         <View style={styles.inputWrap}>
-          <Ionicons name="search" size={30} color='black'></Ionicons>
+        <Ionicons name='search' size={25}></Ionicons>
+
           <TextInput
             style={styles.searchInput}
             onChangeText={onChangeText}
@@ -59,7 +60,7 @@ const History = (props) => {
         > 
         </DateListComponent>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -70,20 +71,18 @@ const styles = StyleSheet.create({
     flex:1,
   },
   menuArea:{
-    flex:1,
+    margin:10
   },
-  menu:{
-    position:'absolute',
-    top:10,
-    left:10
-  },
+  // menu:{
+  //   position:'absolute',
+  //   top:10,
+  //   left:10
+  // },
   searchArea:{
-    flex:2,
+    marginBottom:10,
     flexDirection:'row',
     justifyContent:'center',
     alignItems:'center',
-
-
   },
 
   inputWrap:{

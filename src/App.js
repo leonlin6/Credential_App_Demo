@@ -29,13 +29,12 @@ import CredentialDetail from './screens/Wallet/CredentialDetail';
 
 //-----暫時:記得改掉----
 import GetCredentialCheck from './screens/Wallet/GetCredentialCheck';
-import VerifySelectCredDetail from './screens/Certificate/VerifySelectCredDetail';
+import SelectedCredDetail from './screens/Certificate/SelectedCredDetail';
 
 
 
 // Certificate
-import CreateQRScreen from './screens/Certificate/CreateQRScreen';
-import QRCodeScreen from './screens/Certificate/QRCodeScreen';
+import CertificateQR from './screens/Certificate/CertificateQR';
 import SelectCredential from './screens/Certificate/SelectCredential';
 import MyRule from './screens/Certificate/MyRule';
 import RuleDetail from './screens/Certificate/RuleDetail';
@@ -186,16 +185,25 @@ const App = (props) => {
           <Stack.Screen name='CredentialDetail' component={CredentialDetail} ></Stack.Screen>
           <Stack.Screen name='Form' component={Form} ></Stack.Screen>
           <Stack.Screen name='GetCredentialCheck' component={GetCredentialCheck} ></Stack.Screen>
-          <Stack.Screen name='VerifySelectCredDetail' component={VerifySelectCredDetail} ></Stack.Screen>
 
           
           
           {/* Certificate */}
-          <Stack.Screen name='SelectCredential' component={SelectCredential} ></Stack.Screen>
-          <Stack.Screen name='QRCode' component={QRCodeScreen} ></Stack.Screen>
+          <Stack.Screen 
+            name='CertificateQR' 
+            component={CertificateQR} 
+            options={{
+              headerShown:false
+            }}
+          ></Stack.Screen>
           <Stack.Screen name='MyRule' component={MyRule} ></Stack.Screen>
           <Stack.Screen name='RuleDetail' component={RuleDetail} ></Stack.Screen>
           
+
+          {/* Scan-Certificate */}
+          <Stack.Screen name='SelectCredential' component={SelectCredential} ></Stack.Screen>
+          <Stack.Screen name='SelectedCredDetail' component={SelectedCredDetail} ></Stack.Screen>
+
 
           {/* Common */}
           <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
@@ -204,7 +212,7 @@ const App = (props) => {
           {/* <Stack.Screen name='SelectDefinition' component={SelectDefinitionScreen} ></Stack.Screen> */}
 
           {/* Certificate */}
-          {/* <Stack.Screen name='CreateQR' component={CreateQRScreen} ></Stack.Screen>
+          {/* 
           <Stack.Screen name='QRCode' component={QRCodeScreen} ></Stack.Screen>
           <Stack.Screen name='GetCredential' component={GetCredentialScreen} ></Stack.Screen>
           <Stack.Screen name='CertificateHistory' component={CertificateHistoryScreen} ></Stack.Screen>

@@ -10,6 +10,7 @@ import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import com.rnfs.RNFSPackage;
+import com.BV.LinearGradient.LinearGradientPackage;
 // react-native-reanimated
 // import com.facebook.react.bridge.JSIModulePackage; 
 // import com.swmansion.reanimated.ReanimatedJSIModulePackage; 
@@ -38,6 +39,8 @@ public class MainApplication extends Application implements ReactApplication {
         }
       };
 
+
+      
   @Override
   public ReactNativeHost getReactNativeHost() {
     return mReactNativeHost;

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Button } from '@rneui/base';
 import { Colors } from '../../components/common/Colors';
+import LoadingComponent from '../../components/common/LoadingComponent';
   
 import { ListItem, Dialog,} from '@rneui/themed'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,16 +20,19 @@ import axios from 'axios';
 
 // redux
 import {connect} from 'react-redux';
+// actions
+import {setProof, setSchemas, setCredDefs, setProofReq} from '../../actions/index'
 
+//API
+import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
 
-const VerifySelectCredDetail = (props) => {
+const SelectedCredDetail = (props) => {
 
-  console.log('----props.credData', props.route.params.credData);
   let proofResponse;
   let INITIAL_STATE = {
     walletHandle: props.walletHandle, 
     poolHandle: props.poolHandle,
-    proofReq:null,
+    proofReq:props.proofReq,
     requestedCredentials:null,
     masterSecretName:null,
     schemas:null,
@@ -49,38 +53,46 @@ const VerifySelectCredDetail = (props) => {
   }
 
   // use for test
-  const proofReq = {
-    'nonce': '1432422343242122312411212',
-    'name': 'Job-Application',
-    'version': '0.1',
+  // const testProofReq = {
+  //   'nonce': '1432422343242122312411212',
+  //   'name': 'Job-Application',
+  //   'version': '0.1',
+  //   'requested_attributes': {
+  //       'attr1_referent': {
+  //           'name': 'name'
+  //       },
+  //       'attr2_referent': {
+  //           'name': 'title'
+  //       },
+  //   },
+  //   'requested_predicates': {
+
+  //   }
+  // }
+
+
+
+  const testProofReq = {
+    'nonce': '688904220963856581908853',
+    'name': 'Leon-驗證規則',
+    'version': '0.0.1',
     'requested_attributes': {
-        'attr1_referent': {
-            'name': 'name'
-        },
-        'attr2_referent': {
-            'name': 'last_name'
-        },
-        'attr3_referent': {
-            'name': 'title',
-        },
-        'attr4_referent': {
-            'name': 'status',
-        },
-        'attr5_referent': {
-            'name': 'ssn',
-        },
-        'attr6_referent': {
-            'name': 'phone_number'
-        }
+      "policyName": { 
+        "names": ["name", "title"]
+      } 
     },
     'requested_predicates': {
-
+      "policyName": { 
+        "name": "name234", 
+        "p_type": ">=", 
+        "p_value": 100 
+        } 
     }
   }
-
-
   const [fromPage, setFromPage] = useState('VerifyCertificationScan');
-  const [showLoading, setShowLoading] = useState(true);
+  const [showInitLoading, setShowInitLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(false);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [list, setList] = useState();
 
@@ -89,7 +101,7 @@ const VerifySelectCredDetail = (props) => {
     handleCredDataList(props.route.params.credData);
 
     setTimeout(() => {
-      setShowLoading(false);
+      setShowInitLoading(false);
     }, 500);
   }, []);
 
@@ -206,12 +218,24 @@ const VerifySelectCredDetail = (props) => {
   // create proof step
   // 1. get proof req
   const getProofReq = async () => {
+    console.log('====getProofReq===');
+    console.log('---INITIAL_STATE.proofReq---',    INITIAL_STATE.proofReq);
+    console.log('---INITIAL_STATE.walletHandle---',    INITIAL_STATE.walletHandle);
+
+    
     //wh, JSON.stringify(proofRequest)
-    const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  proofReq);
+
+    // const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  INITIAL_STATE.proofReq);
+    
+    
+    const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  testProofReq);
+    console.log('reqResponse',reqResponse);
+    
   }
 
   // 2. create proof
   const createProof = async () => {
+    console.log('====createProofReq===');
 
     INITIAL_STATE.masterSecretName = await getMasterSecretID();
     INITIAL_STATE.schemas = await getSchema();
@@ -219,7 +243,7 @@ const VerifySelectCredDetail = (props) => {
 
     // for test only : check data
     // console.log('===INITIAL_STATE.walletHandle===',INITIAL_STATE.walletHandle);
-    // console.log('===proofReq===',proofReq);
+    // console.log('===proofReq===',INITIAL_STATE.proofReq);
     // console.log('===requested_creds===',requested_creds);
     // console.log('===INITIAL_STATE.masterSecretName===',INITIAL_STATE.masterSecretName);
     // console.log('===INITIAL_STATE.schemas===',INITIAL_STATE.schemas);
@@ -230,7 +254,7 @@ const VerifySelectCredDetail = (props) => {
     //(wh, JSON.stringify(proofReq), JSON.stringify(requestedCredentials), masterSecretName, JSON.stringify(schemas), JSON.stringify(credentialDefs), JSON.stringify(revStates)
     proofResponse = await indy.proverCreateProof(
       INITIAL_STATE.walletHandle, 
-      proofReq, 
+      INITIAL_STATE.proofReq, 
       requested_creds, 
       INITIAL_STATE.masterSecretName, 
       INITIAL_STATE.schemas, 
@@ -238,46 +262,53 @@ const VerifySelectCredDetail = (props) => {
       INITIAL_STATE.revStates = {}
       ) 
 
+      console.log('===proofResponse===',proofResponse);
 
-      props.navigation.navigate({
-        name: 'Loading',
-        params: {
-          loadingStatusText: ['正在驗證憑證', '憑證驗證完成', '正在返回首頁'],
-          from: 'SelectCredential',
-          toPage: 'Wallet',
-          isUpdateStatusFromAPI:true
-        },
-      });
+
+      // use for test: use for send proof to server
+      props.setProof(proofResponse);
+      // props.setProofReq(proofReq);
+      props.setSchemas(INITIAL_STATE.schemas);
+      props.setCredDefs( INITIAL_STATE.credentialDefs);
+      
+      setShowLoading(true);
   }
 
   // 3. post proof to server
   // 尚需調整API config內容  2022.07.15
-  const postProof = async () => {
+  const putProof = async () => {
+
     try{
       const configurationObject = {
         method: 'put',
-        baseURL:'http://192.168.0.101:5001',
-        url: `api/v1/credential/${INITIAL_STATE.cred_id}/download`,
+        baseURL:ENDPOINT_BASE_URL,
+        url: `/api/v1/verify/${verifyId}/upload/proof`,
         headers:{
           'authorization':`Bearer ${props.loginToken}`,
           'Content-Type':'application/json'
         },
-        data: proofResponse
+        data: {
+          "proof_json": JSON.stringify(proofResponse),
+          "schemas_json": JSON.stringify(INITIAL_STATE.schemas),
+          "credential_defs_json": JSON.stringify(INITIAL_STATE.credentialDefs),
+          "rev_reg_defs_json": "{}",
+          "rev_regs_json": "{}"
+        }
+        
       };
 
-      await axios(configurationObject)
-      .then((response) => {
-        console.log('finish update proof', response.data.cred_json);
-        props.navigation.navigate({
-          name: 'Loading',
-          params: {
-            loadingStatusText: ['正在驗證憑證', '憑證驗證完成', '正在返回首頁'],
-            from: 'SelectCredential',
-            toPage: 'Wallet',
-            isUpdateStatusFromAPI:true
-          },
-        });
-      })
+      await axios(configurationObject);
+      // .then((response) => {
+      //   props.navigation.navigate({
+      //     name: 'Loading',
+      //     params: {
+      //       loadingStatusText: ['正在驗證憑證', '憑證驗證完成', '正在返回首頁'],
+      //       from: 'SelectCredential',
+      //       toPage: 'Wallet',
+      //       isUpdateStatusFromAPI:true
+      //     },
+      //   });
+      // })
 
     }catch(error){
       console.log('error', error);
@@ -286,12 +317,12 @@ const VerifySelectCredDetail = (props) => {
 
 
   const handleProof = async () => {
-    setShowLoading(true);
+    setShowInitLoading(true);
 
     //sending proof to server
     await getProofReq();
-    await handleRequestedCredentials(proofReq);
-    await createProof();
+    // await handleRequestedCredentials(proofReq);
+    // await createProof();
     // await postProof();
   }
 
@@ -361,45 +392,57 @@ const VerifySelectCredDetail = (props) => {
     return detailList;
   };
 
+
   //render page
   return (
     <View style={{ flex: 1 }}>
-      {showLoading === true ? 
-      (
-        <View style={[styles.container, { justifyContent: 'center' }]}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) 
-      : 
-      (
-        <View style={styles.container}>
-          <View style={styles.imageArea}>
-            <Image style={styles.image} resizeMode={'contain'} source={require('../../assets/images/logo.png')}></Image>
-          </View>
-          <View style={styles.detailArea}>
-            <ScrollView persistentScrollbar={true}>
-              <DetailList></DetailList>
-            </ScrollView>
-          </View>
-          <View style={styles.buttonArea}>
-            {fromPage === 'CertificateCredential' ? 
-            (
-              <TouchableOpacity onPress={onVerify} style={styles.btn}>
-                <Ionicons name="md-checkmark" size={60} color={Colors.successGreen}></Ionicons>
-                <Text>查驗此憑證</Text>
-              </TouchableOpacity>
-            ) 
-            : 
-            (
-              <TouchableOpacity onPress={onVerifiedHistory} style={styles.btn}>
-                <Ionicons name="library" size={60} color="black"></Ionicons>
-                <Text>憑證被查驗</Text>
-                <Text>歷程紀錄</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      )}
+      {
+        showLoading === true ? (
+          <LoadingComponent 
+            loadingStatusText={['正在驗證憑證', '憑證驗證完成', '正在返回首頁'] }
+            from='SelectCredential'
+            toPage='Wallet'
+            nv={props.navigation}/>
+        )
+        :
+        (
+          showInitLoading === true ? (
+            <View style={[styles.container, { justifyContent: 'center' }]}>
+              <ActivityIndicator size="large" />
+            </View>
+          ) 
+          : 
+          (
+            <View style={styles.container}>
+              <View style={styles.imageArea}>
+                <Image style={styles.image} resizeMode={'contain'} source={require('../../assets/images/logo.png')}></Image>
+              </View>
+              <View style={styles.detailArea}>
+                <ScrollView persistentScrollbar={true}>
+                  <DetailList></DetailList>
+                </ScrollView>
+              </View>
+              <View style={styles.buttonArea}>
+                {fromPage === 'CertificateCredential' ? 
+                (
+                  <TouchableOpacity onPress={onVerify} style={styles.btn}>
+                    <Ionicons name="md-checkmark" size={60} color={Colors.successGreen}></Ionicons>
+                    <Text>查驗此憑證</Text>
+                  </TouchableOpacity>
+                ) 
+                : 
+                (
+                  <TouchableOpacity onPress={onVerifiedHistory} style={styles.btn}>
+                    <Ionicons name="library" size={60} color="black"></Ionicons>
+                    <Text>憑證被查驗</Text>
+                    <Text>歷程紀錄</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )
+        )
+      }
       <VerifyModal></VerifyModal>
     </View>
   );
@@ -496,8 +539,9 @@ const mapStateToProps = (state) => {
       loginToken: state.loginToken,
       walletHandle: state.walletHandle,
       poolHandle: state.poolHandle,
+      proofReq: state.proofReq
 
   };
 }
 
-export default connect(mapStateToProps)(VerifySelectCredDetail);
+export default connect(mapStateToProps, {setProof, setSchemas, setCredDefs, setProofReq})(SelectedCredDetail);

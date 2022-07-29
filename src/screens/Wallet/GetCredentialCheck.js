@@ -19,7 +19,8 @@ import axios from 'axios';
 import {connect} from 'react-redux';
 import { initializeRegistryWithDefinitions } from 'react-native-animatable';
 import LoadingComponent from '../../components/common/LoadingComponent';
-
+//API
+import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
 
 
 const GetCredentialCheck = (props) => {
@@ -177,9 +178,11 @@ const GetCredentialCheck = (props) => {
   // 3 
   const submit = async () => {
     try{
+      console.log('---mergedDetailData---',mergedDetailData);
+
       const configurationObject = {
         method: 'put',
-        baseURL:'http://192.168.0.101:5001',
+        baseURL:ENDPOINT_BASE_URL,
         url: `api/v1/credential/${INITIAL_STATE.cred_id}/download`,
         headers:{
           'authorization':`Bearer ${props.loginToken}`,
@@ -194,6 +197,7 @@ const GetCredentialCheck = (props) => {
 
       await axios(configurationObject)
       .then((response) => {
+        console.log('download cred======', response.data);
         console.log('download credential', response.data.cred_json);
         INITIAL_STATE.cred_json = response.data.cred_json;
       })
@@ -210,7 +214,8 @@ const GetCredentialCheck = (props) => {
 
       
       // proverStoreCredential(wh, credId, credReqMetadata, cred, credDef, revRegDef);
-
+      console.log('---INITIAL_STATE.cred_json--', INITIAL_STATE.cred_json); 
+      console.log('---INITIAL_STATE', INITIAL_STATE); 
       let parsedCredJson = JSON.parse(INITIAL_STATE.cred_json);
       console.log('---parsedCredJson--', parsedCredJson); 
 
@@ -236,7 +241,7 @@ const GetCredentialCheck = (props) => {
     await getDefinition();
     await CreateCredentialReq();
     await submit();
-    // await saveCredential();
+    await saveCredential();
 
     // props.navigation.navigate({
     //   name:'Loading',
