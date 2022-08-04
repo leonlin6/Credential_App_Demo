@@ -28,6 +28,9 @@ public class MainActivity extends ReactActivity {
     File externalFilesDir = getExternalFilesDir(null);
     String path = externalFilesDir.getAbsolutePath();
     System.out.println("externalFilesDir=" + path);
+    
+    String librarypath = System.getProperty("java.library.path");
+    System.out.println("librarypath=" + librarypath);
 
     try {
       Os.setenv("EXTERNAL_STORAGE", getExternalFilesDir(null).getAbsolutePath(), true);

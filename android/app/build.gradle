@@ -128,6 +128,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+
     defaultConfig {
         applicationId "com.usereactnativeindysdk"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -141,7 +142,9 @@ android {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false  // If true, also generate a universal APK
-            include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+            // include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+            include "x86_64"
+
         }
     }
     signingConfigs {
@@ -175,6 +178,14 @@ android {
             signingConfig signingConfigs.release // 打release包，而不是debug
         }
     }
+
+    sourceSets {
+        main {         
+                jniLibs.srcDirs = ['src/main/jnilibs']          
+            }
+        } 
+    
+
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->

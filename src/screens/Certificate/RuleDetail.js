@@ -127,7 +127,13 @@ const RuleDetail = (props) => {
     const response = await axios(configurationObject);
     console.log('===response===', response.data);
 
-    await AsyncStorage.setItem('@CurrentRule',  props.route.params.templateName);
+    await AsyncStorage.setItem('@CurrentRule', JSON.stringify(
+      {
+        templateName: props.route.params.templateName,
+        templateId: props.route.params.templateId
+      }));
+
+      
     props.navigation.reset({
       index:0,
       routes: [

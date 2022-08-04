@@ -57,7 +57,7 @@ const SelectCredential = (props) => {
 
     const response = await axios(configurationObject);
     const templateAttributes = response.data.attributes[0].attributes;
-
+    console.log('---credsFromWallet---',credsFromWallet);
     // check if cred has the attrs which requested by template
     templateAttributes.forEach((item) => {
       credsFromWallet.forEach((it) => {
