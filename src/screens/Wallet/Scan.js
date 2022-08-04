@@ -75,16 +75,6 @@ const Scan = (props) => {
       setIsShowLoading(true);
       console.log('qrurl', url);
 
-
-      // const configurationObject = {
-      //   method: 'get',
-      //   url: url,
-      //   headers:{
-      //     'authorization':`Bearer ${props.loginToken}`,
-      //     'Content-Type':'application/json'
-      //   }
-      // };
-
       //use for test
       const configurationObject = {
         method: 'get',
@@ -95,17 +85,22 @@ const Scan = (props) => {
         }
       };
 
-
       await axios(configurationObject)
       .then((response) => {
         credentialInfo = response.data;
 
         console.log('----credentialInfo---',credentialInfo);
 
+        // type 1:領證 11:查驗
         if(credentialInfo.type === 1){
+        console.log('----credentialInfo---');
+
           cred_offer_json = JSON.parse(credentialInfo.cred_offer);
           cred_id = credentialInfo.credential;
           cred_def_id = credentialInfo.credentialTemplate.credentialDefinition.cred_def_id;
+        console.log('----cred_offer_json---',cred_offer_json);
+        console.log('----cred_id---',cred_id);
+        console.log('----cred_def_id---',cred_def_id);
           
           props.navigation.navigate({
             name:'Form',
@@ -140,7 +135,7 @@ const Scan = (props) => {
 
 
   const backButton = async () => {
-    // props.navigation.goBack();
+    props.navigation.goBack();
 
 
     // // 若有要讓user自填的definition attribute才進form
@@ -189,10 +184,6 @@ const Scan = (props) => {
     // }
   }
 
-  // use for test
-  const setToggle = () => {
-    setIsGetCredential(!isGetCredential);
-  }
 
   return (
     <View style={{flex:1}}>
@@ -220,13 +211,6 @@ const Scan = (props) => {
           <TouchableOpacity onPress={backButton} style={{position:'absolute', top: 10, left: 10 ,borderRadius:100}}>
             <Ionicons 
               name = 'arrow-back-circle-sharp'
-              size={50} 
-              style={{color:'white'}}
-            ></Ionicons>
-          </TouchableOpacity>
-          <TouchableOpacity  onPress={setToggle} style={{position:'absolute', top: 10, left: 90 ,borderRadius:100}}>
-            <Ionicons 
-              name = {isGetCredential === true ? 'toggle': 'toggle-outline'}
               size={50} 
               style={{color:'white'}}
             ></Ionicons>

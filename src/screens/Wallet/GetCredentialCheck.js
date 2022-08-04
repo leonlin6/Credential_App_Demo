@@ -96,16 +96,6 @@ const GetCredentialCheck = (props) => {
       
       setMergedDetailData(arrayData);
 
-      
-      // // await AsyncStorage.removeItem('@detailData');
-      // console.log('----arrayData----',arrayData);
-
-      // try{
-      //   await AsyncStorage.setItem('@DetailData', JSON.stringify(arrayData));
-      // } 
-      // catch(error){
-      //   console.log(error);
-      // }
     }
     catch(error){
     }
@@ -197,8 +187,8 @@ const GetCredentialCheck = (props) => {
 
       await axios(configurationObject)
       .then((response) => {
-        console.log('download cred======', response.data);
-        console.log('download credential', response.data.cred_json);
+        console.log('---download cred---', response.data);
+        console.log('---download credential----', response.data.cred_json);
         INITIAL_STATE.cred_json = response.data.cred_json;
       })
 
@@ -227,8 +217,7 @@ const GetCredentialCheck = (props) => {
         INITIAL_STATE.cred_def_json
       );
   
-      console.log('save credential result', result);
-    setShowLoading(false);
+      console.log('----save credential result----', result);
 
     } catch(error){
       console.log(error);
@@ -237,6 +226,7 @@ const GetCredentialCheck = (props) => {
 
   const onGetCredential = async () => {
     setShowLoading(true);
+
     //download cred handle
     await getDefinition();
     await CreateCredentialReq();

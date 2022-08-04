@@ -23,7 +23,6 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const Certificate = (props) => {
-
   const [showDrawerMenu, setShowDrawerMenu] = useState(false);
   const [currentRule, setCurrentRule] = useState('');
 
@@ -31,10 +30,10 @@ const Certificate = (props) => {
     const getCurrentRule = async () => {
       try{
         const CR = await AsyncStorage.getItem('@CurrentRule');
-        console.log('CR', CR);
-        console.log('currentRule',currentRule);
+        const CRParsed = JSON.parse(CR);
+        console.log('CRParsed', CRParsed);
         if(CR !== null)
-          setCurrentRule(CR);
+          setCurrentRule(CRParsed);
       }catch(error){
         console.log(error);
       }
@@ -71,6 +70,9 @@ const Certificate = (props) => {
   }  
 
   const onCertificatePress = async () => {
+    console.log('----currentRule----',currentRule);
+
+
     const configurationObject = {
       method: 'post',
       baseURL: ENDPOINT_BASE_URL,
@@ -78,17 +80,24 @@ const Certificate = (props) => {
       headers:{
         'authorization':`Bearer ${props.loginToken}`,
         'Content-Type':'application/json'
+      },
+      data:{
+        "type": 11,
+        "startTime": 1656277728993,
+        "endTime": 1656277728993,
+        "verifyTemplateId": currentRule.templateId
       }
-
     };
     const response = await axios(configurationObject);
 
     console.log('===response===', response.data);
+    console.log('===verify===', response.data.verify);
 
     props.navigation.navigate({
       name:'CertificateQR',
       params:{
-        _id: response.data._id,
+        qrId: response.data._id,
+        verifyId: response.data.verify,
         createdAt: response.data.createdAt,
         updatedAt: response.data.updatedAt
       }
@@ -113,7 +122,7 @@ const Certificate = (props) => {
           {
             currentRule !== '' ? 
             (
-              <Text style={styles.currentRuleText}>{`現行規則：${currentRule}`}</Text>
+              <Text style={styles.currentRuleText}>{`現行規則：${currentRule.templateName}`}</Text>
             ) 
             : 
             (

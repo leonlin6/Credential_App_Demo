@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useReducer} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { 
   View, 
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Button } from '@rneui/base';
 import { Colors } from '../../components/common/Colors';
-import LoadingComponent from '../../components/common/LoadingComponent';
+import ServerStatusLoadingComponent from '../../components/common/ServerStatusLoadingComponent';
   
 import { ListItem, Dialog,} from '@rneui/themed'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,6 +29,10 @@ import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
 const SelectedCredDetail = (props) => {
 
   let proofResponse;
+  let statusIntervalId = useRef(null);
+  let verifyResponse;
+
+
   let INITIAL_STATE = {
     walletHandle: props.walletHandle, 
     poolHandle: props.poolHandle,
@@ -52,49 +56,12 @@ const SelectedCredDetail = (props) => {
     }
   }
 
-  // use for test
-  // const testProofReq = {
-  //   'nonce': '1432422343242122312411212',
-  //   'name': 'Job-Application',
-  //   'version': '0.1',
-  //   'requested_attributes': {
-  //       'attr1_referent': {
-  //           'name': 'name'
-  //       },
-  //       'attr2_referent': {
-  //           'name': 'title'
-  //       },
-  //   },
-  //   'requested_predicates': {
 
-  //   }
-  // }
-
-
-
-  const testProofReq = {
-    'nonce': '688904220963856581908853',
-    'name': 'Leon-驗證規則',
-    'version': '0.0.1',
-    'requested_attributes': {
-      "policyName": { 
-        "names": ["name", "title"]
-      } 
-    },
-    'requested_predicates': {
-      "policyName": { 
-        "name": "name234", 
-        "p_type": ">=", 
-        "p_value": 100 
-        } 
-    }
-  }
   const [fromPage, setFromPage] = useState('VerifyCertificationScan');
-  const [showInitLoading, setShowInitLoading] = useState(true);
+  const [showInitLoading, setShowInitLoading] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
-
   const [modalVisible, setModalVisible] = useState(false);
-  const [list, setList] = useState();
+  const [list, setList] = useState([]);
 
   useEffect(() => {
     setFromPage(props.route.params.from);
@@ -104,6 +71,154 @@ const SelectedCredDetail = (props) => {
       setShowInitLoading(false);
     }, 500);
   }, []);
+
+
+  // 因closure的問題，先把clean up function每次rerender都做，才能讀到global varible：statusIntervalId，之後在看則麼解
+  // 2022.08.03 可用 待優化
+  useEffect(() => {
+    return function cleanup() {
+      console.log('---useEffect clear interval---',statusIntervalId.current);
+      clearInterval(statusIntervalId.current)
+    }
+
+  },[]);
+
+  const doVerifyProof = async (proofReq, proof, schemas, credDefs) => {
+    console.log('====doVerifyProof====');
+    verifyResponse = await indy.verifierVerifyProof(
+      proofReq,
+      proof,
+      schemas,
+      credDefs,
+      {},
+      {}
+      
+    );
+
+    console.log('-----verifyResponse-----' , verifyResponse);
+  }
+
+  const doUploadProof = async () => {
+    console.log('====doUploadProof====');
+    console.log('-----verifyResponse-----' , verifyResponse);
+
+    const uploadProofConfig = {
+      method: 'put',
+      baseURL: ENDPOINT_BASE_URL,
+      url: `api/v1/verify/${props.verifyId}/upload/valid`,
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      },
+      data:{
+        valid:verifyResponse
+      }
+    };
+
+    const uploadProofResponse = await axios(uploadProofConfig);
+    console.log('-----uploadProofResponse-----' , uploadProofResponse.data);
+  }
+
+
+  //以查驗者身份打getCurrentStatus
+  //因為要把status2 -> 3
+  const getCurrentStatusByVerifier = async () => {
+    console.log('--props.verifyId---', props.verifyId);
+    try{
+      const configurationObject = {
+        method: 'get',
+        baseURL: ENDPOINT_BASE_URL,
+        url: `/api/v1/verify/${props.verifyId}/status?status=2`,
+        headers:{
+          'authorization':`Bearer ${props.loginToken}`,
+          'Content-Type':'application/json'
+        }
+      };
+
+      
+      await axios(configurationObject)
+      .then(async (response) => {
+        console.log('---response.data---',response.data);
+
+        if(response.data.status === 3){
+          //status:3 第一次response變3的時候，會下載proof相關資料，後續只回status
+          console.log('====status3=====');
+          console.log('proof', response.data);
+          if(response.data.hasOwnProperty('proof_json')){
+            const proofReqFromServer = JSON.parse(response.data.proof_req_json);
+            const proofFromServer = JSON.parse(response.data.proof_json);
+            const schemasFromServer = JSON.parse(response.data.schemas_json);
+            const credDefsFromServer = JSON.parse(response.data.credential_defs_json);
+
+
+
+
+            await doVerifyProof(proofReqFromServer, proofFromServer, schemasFromServer, credDefsFromServer);
+            await doUploadProof();
+            clearInterval(statusIntervalId.current);
+            statusIntervalId.current = setInterval(getCurrentStatusByProver, 5000);
+
+          }else{
+            clearInterval(statusIntervalId.current);
+            console.log('status', response.data.status);
+          }
+
+
+
+        }
+      })
+
+    }catch(error){
+      console.log('error', error);
+    }
+  }
+
+  //以持證者身份打getCurrentStatus
+  const getCurrentStatusByProver = async () => {
+    console.log('--getCurrentStatusByProver---');
+    try{
+      const configurationObject = {
+        method: 'get',
+        baseURL: ENDPOINT_BASE_URL,
+        url: `/api/v1/verify/${props.verifyId}/status?status=4`,
+        headers:{
+          'authorization':`Bearer ${props.loginToken}`,
+          'Content-Type':'application/json'
+        }
+      };
+
+      
+      await axios(configurationObject)
+      .then((response) => {
+        console.log('---response.data---',response.data);
+        console.log('----statusIntervalId---',statusIntervalId.current);
+
+        if(response.data.status === 4){
+          console.log('----statusIntervalId 4 ---',statusIntervalId.current);
+
+          console.log('---response.data---',response.data);
+        }else if(response.data.status === 10){
+          console.log('----sttus 10---',response.data.status);
+          props.navigation.reset({
+            index:0,
+            routes: [
+              {
+                name:'DrawerContainer',
+                state:{
+                  routes:[{ name: 'Wallet' } ]
+                }
+              }
+            ]
+          });
+        }else{
+          console.log('---other status----')
+        }
+      })
+
+    }catch(error){
+      console.log('error', error);
+    }
+  }
 
 
   const handleCredDataList = (data) => {
@@ -118,24 +233,28 @@ const SelectedCredDetail = (props) => {
 
   //處理cred資料對應要查驗的attr組成＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
   const handleRequestedCredentials = (req) => {
-    const credAttrs = props.route.params.credData.attrs;
     const requestAttrs = req.requested_attributes;
-    let hashTemp= {};
+  
+    console.log('---credData---',props.route.params.credData);
+    console.log('---requestAttrs---',requestAttrs);
 
-    
+
+    // Hash, assign credAttr's value to requested_attribute_referent_1
+    // 'attr1_referent': {'cred_id': cred_for_attr1['referent'], 'revealed': True},
+    // "requested_attribute_referent_1": {"cred_id": string, "timestamp": Optional<number>, revealed: <bool> }},
     for(let requestAttr in requestAttrs){
-      hashTemp[requestAttrs[requestAttr].name] = requestAttr;
+      requested_creds.requested_attributes[requestAttr] = {
+        cred_id: props.route.params.credData.referent, 
+        revealed: true
+      };
     }
 
-    // Hash, assign credAttr's value to self_attested_attributes
-    // Example {"attr1_referent": "Leon"}
-    for(let credAttr in credAttrs){
-      requested_creds.self_attested_attributes[hashTemp[credAttr]] = credAttrs[credAttr];
-    }
+    console.log('---requested_creds---',requested_creds);
   }
 
 
   const onVerify = () => {
+
     setModalVisible(!modalVisible);
   };
 
@@ -225,10 +344,10 @@ const SelectedCredDetail = (props) => {
     
     //wh, JSON.stringify(proofRequest)
 
-    // const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  INITIAL_STATE.proofReq);
+    const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  INITIAL_STATE.proofReq);
     
     
-    const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  testProofReq);
+    // const reqResponse = await indy.proverGetCredentialsForProofReq(INITIAL_STATE.walletHandle,  testProofReq);
     console.log('reqResponse',reqResponse);
     
   }
@@ -274,15 +393,18 @@ const SelectedCredDetail = (props) => {
       setShowLoading(true);
   }
 
-  // 3. post proof to server
-  // 尚需調整API config內容  2022.07.15
+  // 3. put proof to server
   const putProof = async () => {
-
+    console.log("proof_json", proofResponse);
+    console.log("schemas_json", INITIAL_STATE);
+    console.log("credential_defs_json", INITIAL_STATE.credentialDefs);
+    console.log("verifyId", props.verifyId);
+   
     try{
       const configurationObject = {
         method: 'put',
         baseURL:ENDPOINT_BASE_URL,
-        url: `/api/v1/verify/${verifyId}/upload/proof`,
+        url: `/api/v1/verify/${props.verifyId}/upload/proof`,
         headers:{
           'authorization':`Bearer ${props.loginToken}`,
           'Content-Type':'application/json'
@@ -297,18 +419,17 @@ const SelectedCredDetail = (props) => {
         
       };
 
-      await axios(configurationObject);
-      // .then((response) => {
-      //   props.navigation.navigate({
-      //     name: 'Loading',
-      //     params: {
-      //       loadingStatusText: ['正在驗證憑證', '憑證驗證完成', '正在返回首頁'],
-      //       from: 'SelectCredential',
-      //       toPage: 'Wallet',
-      //       isUpdateStatusFromAPI:true
-      //     },
-      //   });
-      // })
+      await axios(configurationObject)
+      .then((response)=>{
+        if(response.data.success === true){
+          statusIntervalId.current = setInterval(getCurrentStatusByVerifier,5000);
+        }else{
+          clearInterval(statusIntervalId.current);
+
+          console.log('put proof response false', response.data);
+        }
+      })
+
 
     }catch(error){
       console.log('error', error);
@@ -317,16 +438,24 @@ const SelectedCredDetail = (props) => {
 
 
   const handleProof = async () => {
-    setShowInitLoading(true);
+    // setShowInitLoading(true);
 
     //sending proof to server
     await getProofReq();
-    // await handleRequestedCredentials(proofReq);
-    // await createProof();
-    // await postProof();
+    await handleRequestedCredentials(INITIAL_STATE.proofReq);
+    await createProof();
+    await putProof();
+
   }
 
+
+  const onVerifiedHistory = () => {
+    console.log('23243');
+  }
+
+
   const onModalConfirm = () => {
+
     setModalVisible(!modalVisible);
     handleProof();
 
@@ -398,11 +527,13 @@ const SelectedCredDetail = (props) => {
     <View style={{ flex: 1 }}>
       {
         showLoading === true ? (
-          <LoadingComponent 
+          <ServerStatusLoadingComponent 
             loadingStatusText={['正在驗證憑證', '憑證驗證完成', '正在返回首頁'] }
             from='SelectCredential'
             toPage='Wallet'
-            nv={props.navigation}/>
+            nv={props.navigation}
+            verifyId={props.route.params.verifyId}
+            />
         )
         :
         (
@@ -425,10 +556,16 @@ const SelectedCredDetail = (props) => {
               <View style={styles.buttonArea}>
                 {fromPage === 'CertificateCredential' ? 
                 (
-                  <TouchableOpacity onPress={onVerify} style={styles.btn}>
-                    <Ionicons name="md-checkmark" size={60} color={Colors.successGreen}></Ionicons>
-                    <Text>查驗此憑證</Text>
-                  </TouchableOpacity>
+                  <View>
+                    <TouchableOpacity onPress={onVerify} style={styles.btn}>
+                      <Ionicons name="md-checkmark" size={60} color={Colors.successGreen}></Ionicons>
+                      <Text>查驗此憑證</Text>
+                    </TouchableOpacity>
+                    {/* <TouchableOpacity onPress={onTest} style={styles.btn}>
+                      <Ionicons name="md-checkmark" size={60} color={Colors.successGreen}></Ionicons>
+                      <Text>查驗此憑證</Text>
+                    </TouchableOpacity> */}
+                  </View>
                 ) 
                 : 
                 (
@@ -539,8 +676,8 @@ const mapStateToProps = (state) => {
       loginToken: state.loginToken,
       walletHandle: state.walletHandle,
       poolHandle: state.poolHandle,
-      proofReq: state.proofReq
-
+      proofReq: state.proofReq,
+      verifyId: state.verifyId
   };
 }
 

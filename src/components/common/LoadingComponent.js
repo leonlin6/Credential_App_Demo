@@ -10,6 +10,9 @@ import { Colors } from './Colors';
 import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
 import { CommonActions } from '@react-navigation/native';
 import axios from 'axios';
+// redux
+import {connect} from 'react-redux';
+
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -32,8 +35,6 @@ const LoadingComponent = (props) => {
   const [loadingStatusText, setLoadingStatusText] = useState([]);
   const [loadingStatus, dispatch] = useReducer(reducer, 0);
   
-  let timeoutLoadingStatusID = null;
-
   useEffect(() => {
     if(loadingStatus <= loadingStatusText.length - 1){
       timeoutLoadingStatus();
@@ -42,8 +43,8 @@ const LoadingComponent = (props) => {
 
   useEffect(() => {
     setLoadingStatusText(props.loadingStatusText);
-  },[])
-
+  },[])  
+  
   // Animated
   const fadeIn = (fadeAnim) => {
     // Will change fadeAnim value to 1 in 5 seconds
@@ -69,19 +70,19 @@ const LoadingComponent = (props) => {
     let toPage = props.toPage;
 
     if(toPage === 'VerifyCredential'){
-      navigateToSuccess();
+      navigateToVerifyResult();
     } else if(toPage === 'Wallet'){
       navigateToWallet();
     }else if(toPage === 'CredentialDetail'){
       navigateToCredentailDetail();
-    }else if(toPage === 'Success'){
-      navigateToSuccess();
+    }else if(toPage === 'VerifyResult'){
+      navigateToVerifyResult();
     }else{
       navigateToWallet();
     }
   }
 
-  const navigateToSuccess = () => {
+  const navigateToVerifyResult = () => {
     clearTimeout(timeoutLoadingStatusID);
     props.nv.reset({
       index:1,
@@ -94,7 +95,7 @@ const LoadingComponent = (props) => {
             ]
           }
         },
-        { name:'Success' }
+        { name:'VerifyResult' }
       ]
     });
   }
@@ -118,7 +119,6 @@ const LoadingComponent = (props) => {
   }
 
   const navigateToWallet = (data) => {
-    clearTimeout(timeoutLoadingStatusID);
     props.nv.reset({
       index:1,
       routes: [
@@ -146,40 +146,12 @@ const LoadingComponent = (props) => {
       if(loadingStatus < 2)
         fadeIn(array[loadingStatus+1]);
 
+      //leave page
       if(loadingStatus === loadingStatusText.length - 1){
         leavePage();
       }
 
     }, 3000);
-  }
-
-  //call API to get current proccessing status
-  const getCurrentStatus = async () => {
-    try{
-      const configurationObject = {
-        method: 'put',
-        baseURL: ENDPOINT_BASE_URL,
-        url: `api/v1/credential/${INITIAL_STATE.cred_id}/download`,
-        headers:{
-          'authorization':`Bearer ${props.loginToken}`,
-          'Content-Type':'application/json'
-        },
-        data:{
-          value: mergedDetailData,
-          cred_req_json:JSON.stringify(INITIAL_STATE.cred_req_json)
-        }
-      };
-
-
-      await axios(configurationObject)
-      .then((response) => {
-        console.log('download credential', response.data.cred_json);
-        INITIAL_STATE.cred_json = response.data.cred_json;
-      })
-
-    }catch(error){
-      console.log('error', error);
-    }
   }
 
   const animatedText = loadingStatusText.map((item, index) => {
@@ -219,4 +191,10 @@ const styles = StyleSheet.create({
 
 });
 
-export default LoadingComponent;
+const mapStateToProps = (state) => {  
+  return {
+      loginToken: state.loginToken,
+  };
+}
+
+export default connect(mapStateToProps)(LoadingComponent);
