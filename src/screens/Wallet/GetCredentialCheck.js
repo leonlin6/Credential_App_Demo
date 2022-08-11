@@ -93,7 +93,7 @@ const GetCredentialCheck = (props) => {
       onlyDisplayAttributes.forEach((item)=>{
         arrayData.push(item);
       });
-      
+      console.log('---arrayData---',arrayData);
       setMergedDetailData(arrayData);
 
     }
@@ -160,8 +160,8 @@ const GetCredentialCheck = (props) => {
       INITIAL_STATE.cred_req_json = reqResponse[0];
       INITIAL_STATE.cred_metadata = reqResponse[1];
 
-    // console.log('-------cred_req_json--------', INITIAL_STATE.cred_req_json);
-    // console.log('-------cred_metadata--------', INITIAL_STATE.cred_metadata);
+    console.log('-------cred_req_json--------', INITIAL_STATE.cred_req_json);
+    console.log('-------cred_metadata--------', INITIAL_STATE.cred_metadata);
   
   }
 
@@ -247,18 +247,24 @@ const GetCredentialCheck = (props) => {
 
   const DetailList = () => {
     let i = 0;
-    const list = mergedDetailData.map((item, index) => {
-      return(
-        <ListItem key={index} containerStyle={{backgroundColor:'#F4F4F4'}}>
-          <ListItem.Content>
-            <View style={styles.subtitleView}>
-              <Text style={styles.key}>{item.key}</Text>
-              <Text style={styles.value}>{item.value}</Text>
-            </View>
-          </ListItem.Content>
-        </ListItem>
-      )
-    })
+    let list;
+    if(typeof mergedDetailData !== 'undefined'){
+      list = mergedDetailData.map((item, index) => {
+        return(
+          <ListItem key={index} containerStyle={{backgroundColor:'#F4F4F4'}}>
+            <ListItem.Content>
+              <View style={styles.subtitleView}>
+                <Text style={styles.key}>{item.key}</Text>
+                <Text style={styles.value}>{item.value}</Text>
+              </View>
+            </ListItem.Content>
+          </ListItem>
+        )
+      })
+    }else{
+      list = null;
+    }
+
     return list;
   }
 

@@ -13,7 +13,7 @@ const Form = (props) => {
 
     const [writeAttributes, setWriteAttributes] = useState([]);
     const [onlyDisplayAttributes, setOnlyDisplayAttributes] = useState([]);
-    const [mergedWriteAttributes, setMergedWriteAttributes] = useState({});
+    const [mergedWriteAttributes, setMergedWriteAttributes] = useState([]);
 
     useEffect(() => {
         try{

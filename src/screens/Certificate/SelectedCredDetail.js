@@ -83,94 +83,18 @@ const SelectedCredDetail = (props) => {
 
   },[]);
 
-  const doVerifyProof = async (proofReq, proof, schemas, credDefs) => {
-    console.log('====doVerifyProof====');
-    verifyResponse = await indy.verifierVerifyProof(
-      proofReq,
-      proof,
-      schemas,
-      credDefs,
-      {},
-      {}
-      
-    );
-
-    console.log('-----verifyResponse-----' , verifyResponse);
-  }
-
-  const doUploadProof = async () => {
-    console.log('====doUploadProof====');
-    console.log('-----verifyResponse-----' , verifyResponse);
-
-    const uploadProofConfig = {
-      method: 'put',
+  const downloadResult = async () => {
+    const configurationObject = {
+      method: 'get',
       baseURL: ENDPOINT_BASE_URL,
-      url: `api/v1/verify/${props.verifyId}/upload/valid`,
+      url: `/api/v1/verify/${props.verifyId}/status?status=4`,
       headers:{
         'authorization':`Bearer ${props.loginToken}`,
         'Content-Type':'application/json'
-      },
-      data:{
-        valid:verifyResponse
       }
     };
-
-    const uploadProofResponse = await axios(uploadProofConfig);
-    console.log('-----uploadProofResponse-----' , uploadProofResponse.data);
-  }
-
-
-  //以查驗者身份打getCurrentStatus
-  //因為要把status2 -> 3
-  const getCurrentStatusByVerifier = async () => {
-    console.log('--props.verifyId---', props.verifyId);
-    try{
-      const configurationObject = {
-        method: 'get',
-        baseURL: ENDPOINT_BASE_URL,
-        url: `/api/v1/verify/${props.verifyId}/status?status=2`,
-        headers:{
-          'authorization':`Bearer ${props.loginToken}`,
-          'Content-Type':'application/json'
-        }
-      };
-
-      
-      await axios(configurationObject)
-      .then(async (response) => {
-        console.log('---response.data---',response.data);
-
-        if(response.data.status === 3){
-          //status:3 第一次response變3的時候，會下載proof相關資料，後續只回status
-          console.log('====status3=====');
-          console.log('proof', response.data);
-          if(response.data.hasOwnProperty('proof_json')){
-            const proofReqFromServer = JSON.parse(response.data.proof_req_json);
-            const proofFromServer = JSON.parse(response.data.proof_json);
-            const schemasFromServer = JSON.parse(response.data.schemas_json);
-            const credDefsFromServer = JSON.parse(response.data.credential_defs_json);
-
-
-
-
-            await doVerifyProof(proofReqFromServer, proofFromServer, schemasFromServer, credDefsFromServer);
-            await doUploadProof();
-            clearInterval(statusIntervalId.current);
-            statusIntervalId.current = setInterval(getCurrentStatusByProver, 5000);
-
-          }else{
-            clearInterval(statusIntervalId.current);
-            console.log('status', response.data.status);
-          }
-
-
-
-        }
-      })
-
-    }catch(error){
-      console.log('error', error);
-    }
+    const response = await axios(configurationObject);
+    console.log('---downloadResult response---',response.data);
   }
 
   //以持證者身份打getCurrentStatus
@@ -190,12 +114,12 @@ const SelectedCredDetail = (props) => {
       
       await axios(configurationObject)
       .then((response) => {
-        console.log('---response.data---',response.data);
+        console.log('---getCurrentStatusByProver response.data---',response.data);
         console.log('----statusIntervalId---',statusIntervalId.current);
 
         if(response.data.status === 4){
           console.log('----statusIntervalId 4 ---',statusIntervalId.current);
-
+          downloadResult();
           console.log('---response.data---',response.data);
         }else if(response.data.status === 10){
           console.log('----sttus 10---',response.data.status);
@@ -238,10 +162,8 @@ const SelectedCredDetail = (props) => {
     console.log('---credData---',props.route.params.credData);
     console.log('---requestAttrs---',requestAttrs);
 
-
-    // Hash, assign credAttr's value to requested_attribute_referent_1
-    // 'attr1_referent': {'cred_id': cred_for_attr1['referent'], 'revealed': True},
-    // "requested_attribute_referent_1": {"cred_id": string, "timestamp": Optional<number>, revealed: <bool> }},
+    //之後要再考慮self_attested_attributes和requested_predicates'
+    //現在做法是把cred的referent直接回給indy讓他去找，不用一個一個組內容
     for(let requestAttr in requestAttrs){
       requested_creds.requested_attributes[requestAttr] = {
         cred_id: props.route.params.credData.referent, 
@@ -422,7 +344,8 @@ const SelectedCredDetail = (props) => {
       await axios(configurationObject)
       .then((response)=>{
         if(response.data.success === true){
-          statusIntervalId.current = setInterval(getCurrentStatusByVerifier,5000);
+          //成功上傳proof後，開始第一次更新status
+          statusIntervalId.current = setInterval(getCurrentStatusByProver,5000);
         }else{
           clearInterval(statusIntervalId.current);
 

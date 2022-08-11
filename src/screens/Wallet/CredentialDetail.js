@@ -14,8 +14,32 @@ const CredentialDetail = (props) => {
   const [showLoading, setShowLoading] = useState(true);
   const [list, setList] = useState();
 
+
+
+//測試用
+  // const list2 = [
+  //   { 
+  //     key:'credential_name',
+  //     value:'雪喬股份有限公司門禁'
+  //   },
+  //   { 
+  //     key:'name',
+  //     value:'leon'
+  //   },
+  //   { 
+  //     key:'day',
+  //     value:'2020/02/12'
+  //   },
+  //   { 
+  //     key:'title',
+  //     value:'Snowbridge'
+  //   },
+  // ]
+
+
   useEffect(() => {
     if (props.route.params.from === 'Wallet'){
+      console.log('----props.route.params.credData----',props.route.params.credData);
       handleCredData(props.route.params.credData);
     } else if (props.route.params.from === 'GetCredential'){
       handleGetCredData(props.route.params.mergedDetailData);

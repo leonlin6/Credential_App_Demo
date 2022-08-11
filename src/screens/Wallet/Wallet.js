@@ -24,6 +24,11 @@ const Wallet = (props) => {
  
   const onScanPress = () => {
       props.navigation.navigate('Scan');
+      
+      //測試用
+      // props.navigation.navigate('VerifyResult');
+
+
   }
 
   const onCredentilaListPress = () => {
@@ -65,12 +70,6 @@ const Wallet = (props) => {
       </View>
     </View>
   );
-
-
-
-
-
-
 }
 
 const styles = StyleSheet.create({

@@ -3,5 +3,6 @@ export const Colors = {
    buttonBlue:'#2196f3',
    puzzleBlue:'#2196f3',
    loadingTextLightBlue:'#2196f3',
-   successGreen:'#8bc34a'
+   successGreen:'#8bc34a',
+   failRed:'#D75542'
   }

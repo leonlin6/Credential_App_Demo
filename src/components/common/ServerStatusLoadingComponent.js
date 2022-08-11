@@ -169,11 +169,11 @@ const ServerStatusLoadingComponent = (props) => {
 
 
 
-  useEffect(() => {
-    if(loadingStatus <= loadingStatusText.length - 1){
-      timeoutLoadingStatus();
-    }
-  });
+  // useEffect(() => {
+  //   if(loadingStatus <= loadingStatusText.length - 1){
+  //     timeoutLoadingStatus();
+  //   }
+  // });
 
   useEffect(() => {
     setLoadingStatusText(props.loadingStatusText);
@@ -424,7 +424,7 @@ const ServerStatusLoadingComponent = (props) => {
     };
 
     const response = await axios(configurationObject);
-    console.log('---response---',response.data);
+    console.log('---download response---',response.data);
 
   }
   // for test---------------------------------------------
@@ -446,12 +446,12 @@ const ServerStatusLoadingComponent = (props) => {
       <Text style={styles.text}>憑證驗證中</Text>
 
 
-
+{/* 
       <Button title='uploadProof' onPress={uploadProof}>
       </Button>
 
       <Button title='downloadResult' onPress={downloadResult}>
-      </Button>
+      </Button> */}
 
     </View>
   );

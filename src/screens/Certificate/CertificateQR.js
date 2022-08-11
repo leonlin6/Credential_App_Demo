@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { 
   View, 
   StyleSheet, 
@@ -20,7 +20,8 @@ import {setProofReq, setVerifyId} from '../../actions/index'
 
 const CertificateQR = (props) => {
   let checkStatusIntervalID;
-  let verifyResponse;
+  let verifyResponse = useRef();
+  let verifyResultData = useRef({});
   const loadingStatusText = ['正在等待對方選擇憑證', '正在驗證憑證...'];
   const [showLoading, setShowLoading] = useState(false);
   const [qrValue, setQRValue] = useState({});
@@ -39,7 +40,14 @@ const CertificateQR = (props) => {
 
   const doVerifyProof = async (proofReq, proof, schemas, credDefs) => {
     console.log('====doVerifyProof====');
-    verifyResponse = await indy.verifierVerifyProof(
+    console.log('====proofReq====',proofReq);
+    console.log('====proof====',proof);
+    console.log('====proofs====',proof.requested_proof.revealed_attr_groups.leon_policyName);
+
+    console.log('====schemas====',schemas);
+    console.log('====credDefs====',credDefs);
+
+    verifyResponse.current = await indy.verifierVerifyProof(
       proofReq,
       proof,
       schemas,
@@ -49,7 +57,13 @@ const CertificateQR = (props) => {
       
     );
 
-    console.log('-----verifyResponse-----' , verifyResponse);
+    verifyResultData.current['ruleName'] = proofReq.name;
+    verifyResultData.current['revealed_attr_groups'] = proof.requested_proof.revealed_attr_groups;
+    verifyResultData.current['verifyResult'] = verifyResponse.current;
+
+    console.log('-----verifyResponse-----' , verifyResponse.current);
+    console.log('-----verifyResultData-----' , verifyResultData.current);
+
   }
 
   const doUploadProof = async () => {
@@ -64,7 +78,7 @@ const CertificateQR = (props) => {
         'Content-Type':'application/json'
       },
       data:{
-        valid:verifyResponse
+        valid:verifyResponse.current
       }
     };
 
@@ -145,7 +159,12 @@ const CertificateQR = (props) => {
                     ]
                   }
                 },
-                { name:'VerifyResult' }
+                { 
+                  name:'VerifyResult',
+                  params:{
+                    verifyResultData:verifyResultData.current
+                  }
+               }
               ]
             });
           }else{
@@ -197,57 +216,50 @@ const CertificateQR = (props) => {
   }
   
 
-const showPropsData = async () => {
+// const showPropsData = async () => {
 
-  const configurationObject = {
-    method: 'get',
-    url: `http://192.168.50.169:5001/api/v1/qrcode/${props.route.params.qrId}`,
-    headers:{
-      'authorization':`Bearer ${props.loginToken}`,
-      'Content-Type':'application/json'
-    }
-  };
+//   const configurationObject = {
+//     method: 'get',
+//     url: `http://192.168.50.169:5001/api/v1/qrcode/${props.route.params.qrId}`,
+//     headers:{
+//       'authorization':`Bearer ${props.loginToken}`,
+//       'Content-Type':'application/json'
+//     }
+//   };
 
-  await axios(configurationObject)
-  .then(async (response) => {
-      console.log('---response.data---', response.data);
-      let credentialInfo = response.data;
+//   await axios(configurationObject)
+//   .then(async (response) => {
+//       console.log('---response.data---', response.data);
+//       let credentialInfo = response.data;
 
-      // recording data to cred detail page
+//       // recording data to cred detail page
 
-      props.setProofReq(JSON.parse(credentialInfo.verify.proof_req_json));
-      props.setVerifyId(credentialInfo.verify._id);
-      let creds = await indy.proverGetCredentials(props.walletHandle);
-      console.log('---cred---',creds[0]);
-      setCredData(creds[0]);
-    })
+//       props.setProofReq(JSON.parse(credentialInfo.verify.proof_req_json));
+//       props.setVerifyId(credentialInfo.verify._id);
+//       let creds = await indy.proverGetCredentials(props.walletHandle);
+//       console.log('---cred---',creds[0]);
+//       setCredData(creds[0]);
+//     })
 
+//   console.log('---proofReq---', props.proofReq);
+//   console.log('---proof---', props.proof);
+//   console.log('---schemas---', props.schemas);
+//   console.log('---defs---', props.defs);
 
-
-
-
-
-
-  // console.log('---proofReq---', props.proofReq);
-  // console.log('---proof---', props.proof);
-  // console.log('---schemas---', props.schemas);
-  // console.log('---defs---', props.defs);
-
-  // let response = await indy.verifierVerifyProof(
-  //   props.proofReq,
-  //   props.proof,
-  //   props.schemas,
-  //   props.defs,
-  //   {},
-  //   {}
+//   let response = await indy.verifierVerifyProof(
+//     props.proofReq,
+//     props.proof,
+//     props.schemas,
+//     props.defs,
+//     {},
+//     {}
     
-  // );
+//   );
 
-  // console.log('verifyProofResponse' , response);
+//   console.log('verifyProofResponse' , response);
 
-  //async verifierVerifyProof(proofRequest, proof, schemas, credentialDefs, revRegDefs, revStates) {
 
-}
+// }
 
 
   // render page
@@ -270,14 +282,9 @@ const showPropsData = async () => {
         (
           <View style={styles.container}>
             <View style={styles.QRArea}>
-              <TouchableOpacity
-                style={styles.contentBtn}
-                onPress={showPropsData}
-                >
-                <QRCode 
-                  value={generateQRUrl()}
-                  size={200}></QRCode>
-              </TouchableOpacity>
+              <QRCode 
+                value={generateQRUrl()}
+                size={300}></QRCode>
             </View>
             <View style={styles.footer}>
               <Text style={styles.info}>掃描此QR Code以查驗執照</Text>

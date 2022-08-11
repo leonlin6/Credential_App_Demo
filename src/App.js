@@ -207,7 +207,7 @@ const App = (props) => {
 
           {/* Common */}
           <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
-          <Stack.Screen name='Success' component={VerifyResult} ></Stack.Screen>
+          <Stack.Screen name='VerifyResult' component={VerifyResult} ></Stack.Screen>
 
           {/* <Stack.Screen name='SelectDefinition' component={SelectDefinitionScreen} ></Stack.Screen> */}
 
