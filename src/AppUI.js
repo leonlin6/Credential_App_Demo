@@ -1,7 +1,11 @@
 
 import React,{useState, useEffect} from 'react';
-import { LogBox, StyleSheet } from "react-native"
-
+import { 
+  LogBox, 
+  StyleSheet ,
+  View,
+  Text
+} from "react-native"
 // import { AuthContext } from './components/context';
 import {connect} from 'react-redux';
 
@@ -16,9 +20,21 @@ import RootStackScreen from './navigators/RootStackScreen';
 // navigators
 import CredentialList from './screens/ui-remake/Credentials/CredentialList';
 import Scan from './screens/ui-remake/Scan/ScanScreen';
-// import VerifyQR from './screens/ui-remake/Verify/VerifyQRScreen';
+import VerifyQR from './screens/ui-remake/Verify/VerifyQRScreen';
+
+// stack
+import CredentialDetail from './screens/ui-remake/Credentials/CredentialDetail';
+import Empty from './screens/ui-remake/Scan/Empty';
 
 
+// SVG
+import TabCredentialsIcon from './assets/icons/SVG/TabCredentials.svg';
+import TabCredentialsDisableIcon from './assets/icons/SVG/TabCredentialsDisable.svg';
+import TabVerifyIcon from './assets/icons/SVG/TabVerify.svg';
+import TabVerifyDisableIcon from './assets/icons/SVG/TabVerifyDisable.svg';
+import ScannerIcon from './assets/icons/SVG/Scanner.svg';
+
+import LinearGradient from 'react-native-linear-gradient';
 
 import { 
   TouchableOpacity,
@@ -43,11 +59,7 @@ const AppUI = (props) => {
 
   const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
-  // const Drawer = createDrawerNavigator();
-  // const AuthContext = createContext();
 
-  const [showAuthDraw, setShowAuthDraw] = useState(false);
-  const [showDrawerMenu, setShowDrawerMenu] = useState(false);
   const [showHeader, setShowHeader] = useState(false);
 
   const onPersonalSetting = () => {
@@ -56,68 +68,120 @@ const AppUI = (props) => {
 
   const onPressHistory = () => {
     console.log('onPressHistory');
-
     setShowHeader(true);
   }
 
-  const onMenuPress = () => {
-    if(showDrawerMenu === true)
-      navigation.closeDrawer();
-    else
-      navigation.openDrawer();
-  }
 
 const TabContainer = () => {
+
+  
+  function MyTabBar({ state, descriptors, navigation }) {
+    return (
+      <View style={styles.bottomBar}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label =  options.title !== undefined ? options.title
+              : route.name;
+  
+          const isFocused = state.index === index;
+  
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+  
+           if (!isFocused && !event.defaultPrevented) {
+              // The `merge: true` option makes sure that the params inside the tab screen are preserved
+              navigation.navigate({ name: route.name, merge: true });
+            }
+          };
+  
+          let icon;
+          if(isFocused){
+            icon = route.name === 'CredentialList' ? <TabCredentialsIcon/>
+                  : route.name ===  'Empty' ? <CustomTabBarButton navigation={navigation}/>
+                  : route.name ===  'VerifyQR' ? <TabVerifyIcon/>
+                  : null;
+          }else{
+            icon = route.name === 'CredentialList' ? <TabCredentialsDisableIcon/>
+                  : route.name ===  'Empty' ? <CustomTabBarButton navigation={navigation}/>
+                  : route.name ===  'VerifyQR' ? <TabVerifyDisableIcon style={{backgroundColor:'white'}}/>
+                  : null;
+          }
+
+          return (
+            <TouchableOpacity
+              style={{justifyContent:'center', alignItems:'center', width:100}}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+            >
+              {icon}
+              <Text style={styles.bottomBarLabel}>{label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  }
+
+  const CustomTabBarButton = ({navigation}) => {
+    return (
+      <TouchableOpacity 
+        onPress={()=>{navigation.navigate('Scan')}}
+        style={{
+          top: 0,
+          justifyContent:'center',
+          alignItems:'center'
+        }}>
+        <LinearGradient colors={['#82ff96','#7cffff']} style={{width:60, height:60, borderRadius:8, justifyContent:'center', alignItems:'center'}}>
+          <ScannerIcon></ScannerIcon>
+        </LinearGradient>
+      </TouchableOpacity>
+    )
+  }
+
+  const ScanStack = () => {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="Scan" component={Scan} />
+      </Stack.Navigator>
+    )
+  }
+
   return(
     <Tab.Navigator 
       initialRouteName="CredentialList"
+      tabBar={props => <MyTabBar {...props} />}
+
       screenOptions={({ route }) => ({
         headerShown:showHeader,
         defaultStatus:"open",
         gestureEnabled:false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          // You can return any component that you like here!
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-
+        tabBarInactiveTintColor: 'black',
+        tabBarActiveTintColor: 'black',
       })}>
       <Tab.Screen name='CredentialList' component={CredentialList}   
         options={{
-          headerLeft: (props) => (
-            <TouchableOpacity style={{marginLeft:10}} onPress={onPersonalSetting}>
-              <Ionicons name='md-person-circle' size={45} color={Colors.puzzleBlue}></Ionicons>
-            </TouchableOpacity>
-          ),
-          headerTitle:'設定',
-          headerTitleAlign:'center',
-          headerStyle:{backgroundColor:'#F2F2F2',height:70},
-          headerTitleStyle:{fontSize:25, fontWeight:'bold'}
+          title:'Credentials'
         }}>
       </Tab.Screen>
-      <Tab.Screen name='Scan' component={Scan}   
+      <Tab.Screen name='Empty' component={Empty}   
         options={{
-          headerLeft: (props) => (
-            <TouchableOpacity style={{marginLeft:10}} onPress={onPersonalSetting}>
-              <Ionicons name='md-person-circle' size={45} color={Colors.puzzleBlue}></Ionicons>
-            </TouchableOpacity>
-          ),
-          headerTitle:'設定',
-          headerTitleAlign:'center',
-          headerStyle:{backgroundColor:'#F2F2F2',height:70},
-          headerTitleStyle:{fontSize:25, fontWeight:'bold'}
+          title:''
+
         }}>
       </Tab.Screen>
-      {/* <Tab.Screen name='VerifyQR' component={VerifyQR}   
+      <Tab.Screen name='VerifyQR' component={VerifyQR}   
         options={{
-          headerLeft: (props) => (
-            <TouchableOpacity style={{marginLeft:10}} onPress={onPressHistory}>
-              <Ionicons name='md-person-circle' size={45} color={Colors.puzzleBlue} ></Ionicons>
-            </TouchableOpacity>
-          ),
+          title:'Verify'
+
         }}>
-      </Tab.Screen> */}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -125,7 +189,11 @@ const TabContainer = () => {
   return (
     <NavigationContainer>  
       <Stack.Navigator>
-        <Stack.Screen name='DrawerContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>
+        <Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>
+
+        <Stack.Screen name='CredentialDetail' component={CredentialDetail} options={{headerShown: false}}></Stack.Screen>
+        <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
+
       </Stack.Navigator>                
     </NavigationContainer>
   );
@@ -139,6 +207,30 @@ const mapStateToProps = (state) => {
 
  
 const styles = StyleSheet.create({
+  bottomBar: {
+    flex:1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+
+    position: 'absolute',
+    bottom: 25,
+    left: 20,
+    right: 20,
+    height: 66,
+    borderRadius:60,
+    paddingBottom:10,
+    backgroundColor:'white'
+  },
+  bottomBarLabel: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+
+    fontFamily:'RedHatDisplay-Bold',
+    fontSize:12,
+  },
+
   headerTitle:{
     ontSize:25, 
     fontWeight:'bold'

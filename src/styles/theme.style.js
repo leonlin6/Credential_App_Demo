@@ -5,6 +5,30 @@ export const headline = {
     lineHeight: 36,
     color: 'white'
 
+  },
+  Headline3:{
+    fontFamily: 'RedHatDisplay-Bold',
+    fontSize: 18,
+    lineHeight: 27,
+  },
+  Headline4:{
+    fontFamily: 'RedHatDisplay-Bold',
+    fontSize: 16,
+    lineHeight: 24,
+  }
+}
+
+export const content = {
+  DefaultBold:{
+    fontFamily: 'RedHatDisplay-Bold',
+    fontSize: 16,
+    lineHeight: 24,
+
+  },
+  Default:{
+    fontFamily: 'RedHatDisplay-Regular',
+    fontSize: 16,
+    lineHeight: 24,
   }
 }
 
