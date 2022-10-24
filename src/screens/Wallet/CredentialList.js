@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Text
 } from 'react-native';
-import ListComponent from '../../components/common/ListComponent';
+import CredListComponent from '../../components/common/CredListComponent';
 import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
 
@@ -54,14 +54,14 @@ const CredentialList = (props) => {
         </View>
       </View>
       <View style={styles.listArea}>
-        <ListComponent 
+        <CredListComponent 
           data={credData} 
           displayType={displayType} 
           navigation={props.navigation} 
           toPage={'CredentialDetail'}
           from={props.route.params.from}
         > 
-        </ListComponent>
+        </CredListComponent>
       </View>
     </View>
   );

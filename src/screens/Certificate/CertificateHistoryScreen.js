@@ -13,7 +13,7 @@ import {
   Linking,
   Button
 } from 'react-native';
-import ListComponent from '../../components/common/ListComponent';
+import CredListComponent from '../../components/common/CredListComponent';
 
 const CertificateHistoryScreen = (props) => {
   const [text, setText] = useState('');
@@ -38,14 +38,14 @@ const CertificateHistoryScreen = (props) => {
         </View>
       </View>
       <View style={styles.listArea}>
-        <ListComponent 
+        <CredListComponent 
           data={data} 
           displayType={'list'} 
           navigation={props.navigation} 
           toPage={'CertificateHistoryDetail'}
           from={props.route.params.from}
         > 
-        </ListComponent>
+        </CredListComponent>
       </View>
     </View>
   );

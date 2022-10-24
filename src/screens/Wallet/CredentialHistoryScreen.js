@@ -12,7 +12,7 @@ import {
   Linking,
   Button
 } from 'react-native';
-import ListComponent from '../../components/utils/ListComponent';
+import CredListComponent from '../../components/utils/CredListComponent';
 
 const CredentialHistoryScreen = (props) => {
   const [text, setText] = useState('');
@@ -37,14 +37,14 @@ const CredentialHistoryScreen = (props) => {
         </View>
       </View>
       <View style={styles.listArea}>
-        <ListComponent 
+        <CredListComponent 
           data={data} 
           displayType={'list'} 
           navigation={props.navigation} 
           toPage={'CredentialHistoryDetail'}
           from={props.route.params.from}
         > 
-        </ListComponent>
+        </CredListComponent>
       </View>
     </View>
   );

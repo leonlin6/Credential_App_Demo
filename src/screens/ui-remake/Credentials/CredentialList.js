@@ -11,7 +11,7 @@ import {
   Text,
   ImageBackground
 } from 'react-native';
-import ListComponent from '../../../components/common/ListComponent';
+import CredListComponent from '../../../components/common/CredListComponent';
 import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
 import { themeSpacing } from '@rneui/themed/dist/config/ThemeProvider';
@@ -67,24 +67,24 @@ const CredentialList = (props) => {
             <TouchableOpacity
               style={styles.btn}
               onPress={onClickDisplay}>
-                {/* <SettingIcon></SettingIcon> */}
+              <SettingIcon></SettingIcon>
             </TouchableOpacity>          
             <TouchableOpacity
               style={styles.btn}
               onPress={onClickDisplay}>
-              <HistoryIcon width={50} height={50} fill={"red"}></HistoryIcon>
+              <HistoryIcon ></HistoryIcon>
             </TouchableOpacity>            
           </View>
         </View>
         <View style={styles.listArea}>
-          <ListComponent 
+          <CredListComponent 
             data={credData} 
             displayType={displayType} 
             navigation={props.navigation} 
             toPage={'CredentialDetail'}
             from={'CredentialList'}
           > 
-          </ListComponent>
+          </CredListComponent>
         </View>
       </ImageBackground>
     </View>
@@ -122,6 +122,8 @@ const styles = StyleSheet.create({
   },
   listArea:{
     flex:7,
+    margin:16
+
   },
   card:{
     height:150,
