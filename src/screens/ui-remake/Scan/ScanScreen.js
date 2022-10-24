@@ -5,13 +5,16 @@ import {
   StyleSheet, 
   Dimensions,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  Text,
+  ImageBackground
 } from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { RNCamera } from 'react-native-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { headline, content} from '../../../styles/theme.style';
 
 // redux
 import {connect} from 'react-redux';
@@ -22,6 +25,10 @@ import {setProofReq, setVerifyId} from '../../../actions/index'
 import { ENDPOINT_BASE_URL } from '../../../APIs/APIs';
 import axios from 'axios';
 
+// window dimension
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const QR_SCAN_SQUARE_SIZE = 300;
 
 const ScanScreen = (props) => {
   let credentialInfo;
@@ -32,8 +39,6 @@ const ScanScreen = (props) => {
   let verifyId;
   let verifyTemplate;
 
-  const SCREEN_HEIGHT = Dimensions.get("window").height;
-  const SCREEN_WIDTH = Dimensions.get("window").width;
 
   const [QRCode, setQRCode] = useState('nothing QR now');
   const [isGetCredential, setIsGetCredential] = useState(true);
@@ -72,7 +77,7 @@ const ScanScreen = (props) => {
 
   const getCredentialInfo = async (url) => {
     try{
-      setIsShowLoading(true);
+      // setIsShowLoading(true);
       console.log('qrurl', url);
 
       //use for test
@@ -126,7 +131,7 @@ const ScanScreen = (props) => {
             }
           });
         }
-        setIsShowLoading(true);
+        // setIsShowLoading(true);
        })
     }catch(error){
       console.log('error', error);
@@ -184,7 +189,10 @@ const ScanScreen = (props) => {
     // }
   }
 
-
+  const onClose = () => {
+    props.navigation.goBack();
+  }
+  let devicewidth=Dimensions.get("window").width
   return (
     <View style={{flex:1}}>
     {
@@ -200,20 +208,42 @@ const ScanScreen = (props) => {
           <QRCodeScanner
             cameraStyle={{height:SCREEN_HEIGHT,width:SCREEN_WIDTH}}
             onRead={onSuccessLoad}
-            flashMode={RNCamera.Constants.FlashMode.torch}
             showMarker={true}
             customMarker={
-              <View style={{flex:1, justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
-                <MaterialCommunityIcons name='scan-helper' style={styles.aimIcon} size={(SCREEN_HEIGHT * 0.475) }></MaterialCommunityIcons>
+              <View style={{flex:1}}>
+                  <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>
+                    <Text style={[headline.Headline1, styles.titleText]}>SCAN</Text>
+                  </ImageBackground>
+                  <View style={{
+                    width:devicewidth,
+                    height:devicewidth,
+                    borderColor:"white",
+                    flexDirection:'row'
+                  }}>
+                  <View style={{flex:1, flexDirection:'row'}}>
+                    <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={{flex:1, flexDirection:'column'}}></ImageBackground>
+                  </View>
+                  <View style={{flex:9}}></View>
+                  <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}/>
+
+                    <View style={styles.topLeftEdge}></View>
+                    <View style={styles.topRightEdge}></View>
+                    <View style={styles.bottomLeftEdge}></View>
+                    <View style={styles.bottomRightEdge}></View>
+                  </View>
+                  <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>
+                  </ImageBackground>
               </View>
             }
+            markerStyle={{
+              backgroundColor:'red'
+            }}
           />
-          <TouchableOpacity onPress={backButton} style={{position:'absolute', top: 10, left: 10 ,borderRadius:100}}>
-            <Ionicons 
-              name = 'arrow-back-circle-sharp'
-              size={50} 
-              style={{color:'white'}}
-            ></Ionicons>
+          <TouchableOpacity style={{position:'absolute', top: 10, left: 10 ,borderRadius:100}} onPress={()=>{onClose()}}>
+            <View style={styles.closeBtn}>
+              <Ionicons name='close' size={20} color='#82ff96' />
+              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Close</Text>
+            </View>
           </TouchableOpacity>
         </View>
       )
@@ -228,15 +258,15 @@ const styles = StyleSheet.create({
   },
   container:{
     flex:1,
+
+  },
+  backgroundImage:{
+    flex:1,
     justifyContent:'center',
-    flexDirection:'column',
     alignItems:'center'
   },
-  centerText: {
-    flex: 1,
-    fontSize: 18,
-    padding: 32,
-    color: '#777'
+  titleText: {
+    color: 'white'
   },
   textBold: {
     fontWeight: '500',
@@ -268,23 +298,64 @@ const styles = StyleSheet.create({
     flex:1,
     fontWeight: '100'
   },
-  centerText: {
-    flex: 1,
-    fontSize: 18,
-    padding: 32,
-    color: '#777'
+
+
+  topLeftEdge: {
+    position: 'absolute',
+    top: 0,
+    left: 35,
+    height: 75,
+    width: 75,
+    borderColor: 'rgb(124,255,255)',
+    borderLeftWidth: 8,
+    borderTopWidth: 8,
+    borderRadius:6,
   },
-  textBold: {
-    fontWeight: '500',
-    color: '#000'
+  topRightEdge: {
+    position: 'absolute',
+    top: 0,
+    right: 35,
+    height: 75,
+    width: 75,
+    borderColor: 'rgb(124,255,255)',
+    borderRightWidth: 8,
+    borderTopWidth: 8,
+    borderRadius:6,
   },
-  buttonText: {
-    fontSize: 21,
-    color: 'rgb(0,122,255)'
+  bottomLeftEdge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 35,
+    height: 75,
+    width: 75,
+    borderColor: 'rgb(124,255,255)',
+    borderLeftWidth: 8,
+    borderBottomWidth: 8,
+    borderRadius:6,
   },
-  buttonTouchable: {
-    padding: 16
-  }
+  bottomRightEdge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 35,
+    height: 75,
+    width: 75,
+    borderColor: 'rgb(124,255,255)',
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
+    borderRadius:6,
+  },
+  closeBtn:{
+    position:'absolute',
+    top: SCREEN_HEIGHT - 130,
+    left: 135,
+    width:104,
+    height:43,
+    backgroundColor:'rgba(79,85,101,0.5)',
+    borderRadius:8,
+    justifyContent:'center',
+    alignItems:'center',
+    flexDirection:'row'
+  },
 });
 
 const mapStateToProps = (state) => {  
