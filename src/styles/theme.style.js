@@ -1,10 +1,10 @@
+import { RNSVGSymbol } from "react-native-svg";
+
 export const headline = {
   Headline1:{
     fontFamily: 'Syncopate-Bold',
     fontSize: 24,
     lineHeight: 36,
-    color: 'white'
-
   },
   Headline3:{
     fontFamily: 'RedHatDisplay-Bold',
@@ -15,6 +15,11 @@ export const headline = {
     fontFamily: 'RedHatDisplay-Bold',
     fontSize: 16,
     lineHeight: 24,
+  },
+  Headline5:{
+    fontFamily: 'RedHatDisplay-Bold',
+    fontSize: 14,
+    lineHeight: 21,
   }
 }
 
@@ -29,7 +34,28 @@ export const content = {
     fontFamily: 'RedHatDisplay-Regular',
     fontSize: 16,
     lineHeight: 24,
-  }
+  },
+  Small:{
+    fontFamily: 'RedHatDisplay-Regular',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  SmallBold:{
+    fontFamily: 'RedHatDisplay-SemiBold',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+}
+
+export const themeColor = {
+  Dark60:'rgb(123,128,139)',
+  DarkDark:'rgb(35,43,62)',
+  DarkDarkOp8:'rgba(35,43,62, 0.8)',
+
+  DecoGreen:'rgb(130,255,150)',
+  SemanticWarningRed:'rgb(239,71,71)',
+  SemanticWarningRedOp4:'rgba(239,71,71, 0.4)',
+  SemanticHighlight:'rgb(45,128,147)'
 }
 
 export default {
