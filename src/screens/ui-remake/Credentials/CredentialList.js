@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { headline } from '../../../styles/theme.style';
-import HistoryIcon from '../../../assets/icons/SVG/History.svg';
-import SettingIcon from '../../../assets/icons/SVG/Setting.svg';
+import HistoryWhiteIcon from '../../../assets/icons/SVG/HistoryWhite.svg';
+import SettingWhiteIcon from '../../../assets/icons/SVG/SettingWhite.svg';
 
 import { 
   View, 
@@ -61,18 +61,18 @@ const CredentialList = (props) => {
       <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.headerArea}>
           <View style={styles.headlineArea}>
-            <Text style={headline.Headline1}>CREDENTIAL</Text>
+            <Text style={[headline.Headline1, styles.titleText]}>CREDENTIAL</Text>
           </View>
           <View style={styles.btnArea}>
             <TouchableOpacity
               style={styles.btn}
               onPress={onClickDisplay}>
-              <SettingIcon></SettingIcon>
+              <SettingWhiteIcon></SettingWhiteIcon>
             </TouchableOpacity>          
             <TouchableOpacity
               style={styles.btn}
               onPress={onClickDisplay}>
-              <HistoryIcon ></HistoryIcon>
+              <HistoryWhiteIcon ></HistoryWhiteIcon>
             </TouchableOpacity>            
           </View>
         </View>
@@ -101,7 +101,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center"
   },
-
   headerArea:{
     flex:1,
     flexDirection:'row',
@@ -111,6 +110,9 @@ const styles = StyleSheet.create({
   headlineArea:{
     flex:4,
     paddingLeft:16
+  },
+  titleText:{
+    color:'white'
   },
   btnArea:{
     flex:1,

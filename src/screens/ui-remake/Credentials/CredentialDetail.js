@@ -11,7 +11,7 @@ import {
 import CredListComponent from '../../../components/common/CredListComponent';
 import {connect} from 'react-redux';
 import { ListItem } from '@rneui/themed';
-import { headline, content} from '../../../styles/theme.style';
+import { headline, content } from '../../../styles/theme.style';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,10 +21,11 @@ const CredentialDetail = (props) => {
   const [list, setList] = useState('');
 
   const [credData, setCredData] = useState([{
-    key:'test1111',
-    value:'1111'
-  }
-])
+      key:'test1111',
+      value:'1111'
+    }
+  ]);
+  
   const [attributesData, setAttributesData] = useState([{
       key:'Age',
       value:'20'
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   listItem:{
     margin: 12,
     marginBottom: 0,
-    padding: 0
+    padding: 0,
   },
   detailListArea:{
     borderRadius:6,
@@ -243,9 +244,6 @@ const styles = StyleSheet.create({
   },
   credentialName:{
     color:'white',
-  },
-  detailArea:{
-    flex:4,
   },
   subtitleView: {
     flexDirection: 'row',
