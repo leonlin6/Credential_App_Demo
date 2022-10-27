@@ -14,7 +14,11 @@ import { RNCamera } from 'react-native-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { headline, content} from '../../../styles/theme.style';
+import { headline, content, themeColor} from '../../../styles/theme.style';
+
+// Icon
+import Alert from '../../../assets/icons/SVG/Alert.svg';
+
 
 // redux
 import {connect} from 'react-redux';
@@ -190,8 +194,15 @@ const ScanScreen = (props) => {
   }
 
   const onClose = () => {
-    props.navigation.goBack();
+    props.navigation.navigate('ApplyCredential');
+    // props.navigation.goBack();
   }
+
+    // only for test
+  const onVerify = () => {
+    props.navigation.navigate('VerifyRule');
+  }
+
   let devicewidth=Dimensions.get("window").width
   return (
     <View style={{flex:1}}>
@@ -211,38 +222,47 @@ const ScanScreen = (props) => {
             showMarker={true}
             customMarker={
               <View style={{flex:1}}>
-                  <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>
-                    <Text style={[headline.Headline1, styles.titleText]}>SCAN</Text>
-                  </ImageBackground>
-                  <View style={{
-                    width:devicewidth,
-                    height:devicewidth,
-                    borderColor:"white",
-                    flexDirection:'row'
-                  }}>
-                  <View style={{flex:1, flexDirection:'row'}}>
-                    <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={{flex:1, flexDirection:'column'}}></ImageBackground>
-                  </View>
+                <View style={styles.titleArea}>
+                  <Text style={[headline.Headline1, styles.titleText]}>SCAN</Text>
+                </View>
+                <View style={{
+                  width:devicewidth,
+                  height:300,
+                  borderColor:"white",
+                  flexDirection:'row'
+                }}>
+                  <View style={styles.sideBackgound}></View>
                   <View style={{flex:9}}></View>
-                  <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}/>
+                  <View style={styles.sideBackgound}/>
 
-                    <View style={styles.topLeftEdge}></View>
-                    <View style={styles.topRightEdge}></View>
-                    <View style={styles.bottomLeftEdge}></View>
-                    <View style={styles.bottomRightEdge}></View>
-                  </View>
-                  <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>
-                  </ImageBackground>
+                  <View style={styles.topLeftEdge}></View>
+                  <View style={styles.topRightEdge}></View>
+                  <View style={styles.bottomLeftEdge}></View>
+                  <View style={styles.bottomRightEdge}></View>
+                </View>
+                <View style={styles.backgroundImage}></View>
               </View>
             }
             markerStyle={{
               backgroundColor:'red'
             }}
           />
+          <TouchableOpacity onPress={()=>{onClose()}}>
+            <View style={styles.errorMessage}>
+              <Alert></Alert>
+              <Text style={[content.DefaultBold, {color:'#FFFFFF'}]}>Invalid. Please rescan</Text>
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity style={{position:'absolute', top: 10, left: 10 ,borderRadius:100}} onPress={()=>{onClose()}}>
             <View style={styles.closeBtn}>
               <Ionicons name='close' size={20} color='#82ff96' />
-              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Close</Text>
+              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Apply Cred</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={{position:'absolute', top: 70, left: 40 ,borderRadius:100}} onPress={()=>{onVerify()}}>
+            <View style={styles.closeBtn}>
+              <Ionicons name='close' size={20} color='#82ff96' />
+              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Verify Cred</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -260,14 +280,29 @@ const styles = StyleSheet.create({
     flex:1,
 
   },
-  backgroundImage:{
+  titleArea:{
+    paddingTop:75,
     flex:1,
-    justifyContent:'center',
-    alignItems:'center'
-  },
+    backgroundColor:themeColor.DarkDarkOp8,
+    alignItems:'center',
+
+  },  
   titleText: {
     color: 'white'
   },
+  sideBackgound:{
+    flex:1,    
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor:themeColor.DarkDarkOp8,
+  },
+  backgroundImage:{
+    flex:2,
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor:themeColor.DarkDarkOp8,
+  },
+
   textBold: {
     fontWeight: '500',
     color: '#000'
@@ -302,8 +337,8 @@ const styles = StyleSheet.create({
 
   topLeftEdge: {
     position: 'absolute',
-    top: 0,
-    left: 35,
+    top: -3,
+    left: 32,
     height: 75,
     width: 75,
     borderColor: 'rgb(124,255,255)',
@@ -313,8 +348,8 @@ const styles = StyleSheet.create({
   },
   topRightEdge: {
     position: 'absolute',
-    top: 0,
-    right: 35,
+    top: -3,
+    right: 32,
     height: 75,
     width: 75,
     borderColor: 'rgb(124,255,255)',
@@ -324,8 +359,8 @@ const styles = StyleSheet.create({
   },
   bottomLeftEdge: {
     position: 'absolute',
-    bottom: 0,
-    left: 35,
+    bottom: -2,
+    left: 33,
     height: 75,
     width: 75,
     borderColor: 'rgb(124,255,255)',
@@ -335,8 +370,8 @@ const styles = StyleSheet.create({
   },
   bottomRightEdge: {
     position: 'absolute',
-    bottom: 0,
-    right: 35,
+    bottom: -2,
+    right: 33,
     height: 75,
     width: 75,
     borderColor: 'rgb(124,255,255)',
@@ -356,6 +391,19 @@ const styles = StyleSheet.create({
     alignItems:'center',
     flexDirection:'row'
   },
+  errorMessage:{
+    position:'absolute',
+    top: SCREEN_HEIGHT - 200,
+    left: 50,
+    height:43,
+    backgroundColor:themeColor.SemanticWarningRedOp4,
+    width: 300,
+    height:40,
+    justifyContent:'center',
+    alignItems:'center',
+    flexDirection:'row',
+    borderRadius: 8
+  }
 });
 
 const mapStateToProps = (state) => {  
