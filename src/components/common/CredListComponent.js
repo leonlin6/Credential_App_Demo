@@ -31,31 +31,88 @@ const CredListComponent = (props) => {
     })
   }
 
-const listContent = (
+  const CardTypeA = ({index, item}) => {
+    return (
+      <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
+        <ImageBackground source={require(`../../assets/background/CredentailCardBG01.png`)} resizeMode="stretch" style={styles.backgroundImage}>
+          <View style={styles.header}>
+            <View style={styles.nameArea}>
+                <Text style={styles.dateText}>Snowbridge Inc.</Text>
+            </View>  
+            <View style={styles.dateArea}>
+                <Text style={styles.dateText}>Sep 4, 2022</Text>
+            </View>           
+          </View>
+          <View style={styles.body}>
+            <Text style={headline.Headline3}>employee ID card</Text>
+          </View>
+          <View style={styles.footer}>
+            <Text style={styles.dateText}>A12345678</Text>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>  
+    )
+  }
+
+  const CardTypeB = ({index, item}) => {
+    return (
+      <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
+        <ImageBackground source={require(`../../assets/background/CredentailCardBG02.png`)} resizeMode="stretch" style={styles.backgroundImage}>
+          <View style={styles.header}>
+            <View style={styles.nameArea}>
+                <Text style={styles.dateText}>Snowbridge Inc.</Text>
+            </View>  
+            <View style={styles.dateArea}>
+                <Text style={styles.dateText}>Sep 4, 2022</Text>
+            </View>           
+          </View>
+          <View style={styles.body}>
+            <Text style={headline.Headline3}>employee ID card</Text>
+          </View>
+          <View style={styles.footer}>
+            <Text style={styles.dateText}>A12345678</Text>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>  
+    )
+  }
+
+  const CardTypeC = ({index, item}) => {
+    return (
+      <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
+        <ImageBackground source={require(`../../assets/background/CredentailCardBG03.png`)} resizeMode="stretch" style={styles.backgroundImage}>
+          <View style={styles.header}>
+            <View style={styles.nameArea}>
+                <Text style={styles.dateText}>Snowbridge Inc.</Text>
+            </View>  
+            <View style={styles.dateArea}>
+                <Text style={styles.dateText}>Sep 4, 2022</Text>
+            </View>           
+          </View>
+          <View style={styles.body}>
+            <Text style={headline.Headline3}>employee ID card</Text>
+          </View>
+          <View style={styles.footer}>
+            <Text style={styles.dateText}>A12345678</Text>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>  
+    )
+  }
+
+  //因為require('')不能用dynamic的作法，所以用這種判斷方式寫死src來return JSX
+  const listContent = (
     <ScrollView style={styles.scrollView}>
     {
       list.length === 0 ? null : (
-        list.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
-            <ImageBackground source={require('../../assets/background/CredentailCardBG01.png')} resizeMode="stretch" style={styles.backgroundImage}>
-              <View style={styles.header}>
-                <View style={styles.nameArea}>
-                    <Text style={styles.dateText}>Snowbridge Inc.</Text>
-                </View>  
-                <View style={styles.dateArea}>
-                    <Text style={styles.dateText}>Sep 4, 2022</Text>
-                </View>           
-              </View>
-              <View style={styles.body}>
-                <Text style={headline.Headline3}>employee ID card</Text>
-              </View>
-              <View style={styles.footer}>
-                <Text style={styles.dateText}>A12345678</Text>
-              
-              </View>
-            </ImageBackground>
-          </TouchableOpacity>     
-      ))
+        list.map((item, index) => {
+          const card = index%3 === 0 ? <CardTypeA item={item} index={index}/>
+                      : index%3 === 1 ? <CardTypeB item={item} index={index}/>
+                      : index%3 === 2 ? <CardTypeC item={item} index={index}/>
+                      : <CardTypeA item={item} index={index}/>;
+          return card;
+        }
+      )
     )
   }                     
   </ScrollView>
@@ -72,7 +129,7 @@ const styles = StyleSheet.create({
   card:{
     height:150,
     marginBottom:16,
-    marginTop:24,
+    marginTop:12,
     borderRadius:6,
     backgroundColor:'white'
   },
