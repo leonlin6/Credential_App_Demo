@@ -20,11 +20,18 @@ import RootStackScreen from './navigators/RootStackScreen';
 // navigators
 import CredentialList from './screens/ui-remake/Credentials/CredentialList';
 import Scan from './screens/ui-remake/Scan/ScanScreen';
-import VerifyQR from './screens/ui-remake/Verify/VerifyQRScreen';
+import Verify from './screens/ui-remake/Verify/Verify';
 
 // stack
 import CredentialDetail from './screens/ui-remake/Credentials/CredentialDetail';
 import Empty from './screens/ui-remake/Scan/Empty';
+import ApplyCredential from './screens/ui-remake/Scan/ApplyCredential';
+import ApplyCredConfirm from './screens/ui-remake/Scan/ApplyCredConfirm';
+
+import VerifyRule from './screens/ui-remake/Scan/VerifyRule';
+import SelectCredential from './screens/ui-remake/Scan/SelectCredential';
+import VerifyCredConfirm from './screens/ui-remake/Scan/VerifyCredConfirm';
+import VerifyResult from './screens/ui-remake/Scan/VerifyResult';
 
 
 // SVG
@@ -33,12 +40,14 @@ import TabCredentialsDisableIcon from './assets/icons/SVG/TabCredentialsDisable.
 import TabVerifyIcon from './assets/icons/SVG/TabVerify.svg';
 import TabVerifyDisableIcon from './assets/icons/SVG/TabVerifyDisable.svg';
 import ScannerIcon from './assets/icons/SVG/Scanner.svg';
+import LeftArrowGreenIcon from './assets/icons/SVG/LeftArrowGreen.svg';
 
 import LinearGradient from 'react-native-linear-gradient';
 
 import { 
   TouchableOpacity,
 } from 'react-native';
+import { headline, themeColor } from './styles/theme.style';
 
 const AppUI = (props) => {
 
@@ -72,128 +81,145 @@ const AppUI = (props) => {
   }
 
 
-const TabContainer = () => {
+  const TabContainer = () => {
 
-  
-  function MyTabBar({ state, descriptors, navigation }) {
-    return (
-      <View style={styles.bottomBar}>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const label =  options.title !== undefined ? options.title
-              : route.name;
-  
-          const isFocused = state.index === index;
-  
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-  
-           if (!isFocused && !event.defaultPrevented) {
-              // The `merge: true` option makes sure that the params inside the tab screen are preserved
-              navigation.navigate({ name: route.name, merge: true });
+    const TabBar = ({ state, descriptors, navigation }) => {
+      return (
+        <View style={styles.bottomBar}>
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const label =  options.title !== undefined ? options.title
+                : route.name;
+    
+            const isFocused = state.index === index;
+    
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+    
+            if (!isFocused && !event.defaultPrevented) {
+                // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                navigation.navigate({ name: route.name, merge: true });
+              }
+            };
+    
+            let icon;
+            if(isFocused){
+              icon = route.name === 'CredentialList' ? <TabCredentialsIcon/>
+                    : route.name ===  'Empty' ? <CustomTabBarButton navigation={navigation}/>
+                    : route.name ===  'Verify' ? <TabVerifyIcon/>
+                    : null;
+            }else{
+              icon = route.name === 'CredentialList' ? <TabCredentialsDisableIcon/>
+                    : route.name ===  'Empty' ? <CustomTabBarButton navigation={navigation}/>
+                    : route.name ===  'Verify' ? <TabVerifyDisableIcon style={{backgroundColor:'white'}}/>
+                    : null;
             }
-          };
-  
-          let icon;
-          if(isFocused){
-            icon = route.name === 'CredentialList' ? <TabCredentialsIcon/>
-                  : route.name ===  'Empty' ? <CustomTabBarButton navigation={navigation}/>
-                  : route.name ===  'VerifyQR' ? <TabVerifyIcon/>
-                  : null;
-          }else{
-            icon = route.name === 'CredentialList' ? <TabCredentialsDisableIcon/>
-                  : route.name ===  'Empty' ? <CustomTabBarButton navigation={navigation}/>
-                  : route.name ===  'VerifyQR' ? <TabVerifyDisableIcon style={{backgroundColor:'white'}}/>
-                  : null;
-          }
 
-          return (
-            <TouchableOpacity
-              style={{justifyContent:'center', alignItems:'center', width:100}}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
-              onPress={onPress}
-            >
-              {icon}
-              <Text style={styles.bottomBarLabel}>{label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+            return (
+              <TouchableOpacity
+                style={{justifyContent:'center', alignItems:'center', width:100}}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                testID={options.tabBarTestID}
+                onPress={onPress}
+              >
+                {icon}
+                <Text style={styles.bottomBarLabel}>{label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      );
+    }
+
+    const CustomTabBarButton = ({navigation}) => {
+      return (
+        <TouchableOpacity 
+          onPress={()=>{navigation.navigate('Scan')}}
+          style={{
+            top: 0,
+            justifyContent:'center',
+            alignItems:'center'
+          }}>
+          <LinearGradient colors={['#82ff96','#7cffff']} style={{width:60, height:60, borderRadius:8, justifyContent:'center', alignItems:'center'}}>
+            <ScannerIcon></ScannerIcon>
+          </LinearGradient>
+        </TouchableOpacity>
+      )
+    }
+
+    const ScanStack = () => {
+      return (
+        <Stack.Navigator>
+          <Stack.Screen name="Scan" component={Scan} />
+        </Stack.Navigator>
+      )
+    }
+
+    return(
+      <Tab.Navigator 
+        initialRouteName="CredentialList"
+        tabBar={props => <TabBar {...props} />}
+
+        screenOptions={({ route }) => ({
+          headerShown:showHeader,
+          defaultStatus:"open",
+          gestureEnabled:false,
+          tabBarInactiveTintColor: 'black',
+          tabBarActiveTintColor: 'black',
+        })}>
+        <Tab.Screen name='CredentialList' component={CredentialList}   
+          options={{
+            title:'Credentials'
+          }}>
+        </Tab.Screen>
+        <Tab.Screen name='Empty' component={Empty}   
+          options={{
+            title:''
+          }}>
+        </Tab.Screen>
+        <Tab.Screen name='Verify' component={Verify}   
+          options={{
+            title:'Verify'
+          }}>
+        </Tab.Screen>
+      </Tab.Navigator>
     );
   }
 
-  const CustomTabBarButton = ({navigation}) => {
-    return (
-      <TouchableOpacity 
-        onPress={()=>{navigation.navigate('Scan')}}
-        style={{
-          top: 0,
-          justifyContent:'center',
-          alignItems:'center'
-        }}>
-        <LinearGradient colors={['#82ff96','#7cffff']} style={{width:60, height:60, borderRadius:8, justifyContent:'center', alignItems:'center'}}>
-          <ScannerIcon></ScannerIcon>
-        </LinearGradient>
-      </TouchableOpacity>
-    )
-  }
-
-  const ScanStack = () => {
-    return (
-      <Stack.Navigator>
-        <Stack.Screen name="Scan" component={Scan} />
-      </Stack.Navigator>
-    )
-  }
-
-  return(
-    <Tab.Navigator 
-      initialRouteName="CredentialList"
-      tabBar={props => <MyTabBar {...props} />}
-
-      screenOptions={({ route }) => ({
-        headerShown:showHeader,
-        defaultStatus:"open",
-        gestureEnabled:false,
-        tabBarInactiveTintColor: 'black',
-        tabBarActiveTintColor: 'black',
-      })}>
-      <Tab.Screen name='CredentialList' component={CredentialList}   
-        options={{
-          title:'Credentials'
-        }}>
-      </Tab.Screen>
-      <Tab.Screen name='Empty' component={Empty}   
-        options={{
-          title:''
-
-        }}>
-      </Tab.Screen>
-      <Tab.Screen name='VerifyQR' component={VerifyQR}   
-        options={{
-          title:'Verify'
-
-        }}>
-      </Tab.Screen>
-    </Tab.Navigator>
-  );
-}
-
   return (
     <NavigationContainer>  
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{ 
+          headerStyle: { 
+          }, 
+          headerTitleStyle: [{ 
+            color:'black',
+            
+          }, headline.Headline3],
+          headerTitleAlign: 'center',
+          headerBackImage: ()=>( 
+            <LeftArrowGreenIcon></LeftArrowGreenIcon>
+           ),
+        }}
+      >
         <Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>
 
         <Stack.Screen name='CredentialDetail' component={CredentialDetail} options={{headerShown: false}}></Stack.Screen>
         <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
+        <Stack.Screen name='ApplyCredential' component={ApplyCredential} ></Stack.Screen>
+        <Stack.Screen name='ApplyCredConfirm' component={ApplyCredConfirm} options={{headerShown: false}}></Stack.Screen>
 
+        <Stack.Screen name='VerifyRule' component={VerifyRule} ></Stack.Screen>
+        <Stack.Screen name='SelectCredential' component={SelectCredential} ></Stack.Screen>
+        <Stack.Screen name='VerifyCredConfirm' component={VerifyCredConfirm} options={{headerShown: false}}></Stack.Screen> 
+        <Stack.Screen name='VerifyResult' component={VerifyResult} options={{headerShown: false}}></Stack.Screen> 
+        
       </Stack.Navigator>                
     </NavigationContainer>
   );
@@ -219,8 +245,9 @@ const styles = StyleSheet.create({
     right: 20,
     height: 66,
     borderRadius:60,
-    paddingBottom:10,
-    backgroundColor:'white'
+    backgroundColor:'white',
+    borderColor:themeColor.DecoGreen,
+    borderWidth:1
   },
   bottomBarLabel: {
     alignItems: 'center',
@@ -232,7 +259,7 @@ const styles = StyleSheet.create({
   },
 
   headerTitle:{
-    ontSize:25, 
+    fontSize:25, 
     fontWeight:'bold'
   }
 });
