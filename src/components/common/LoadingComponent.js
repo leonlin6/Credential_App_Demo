@@ -123,11 +123,11 @@ const LoadingComponent = (props) => {
       index:1,
       routes: [
         {
-          name:'DrawerContainer',
+          name:'TabContainer',
           state:{
             routes:[
               {
-                name: 'Wallet'
+                name: 'CredentialList'
               }
             ]
           }

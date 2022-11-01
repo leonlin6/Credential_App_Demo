@@ -118,7 +118,7 @@ const VerifyResult = (props) => {
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <View style={{flex: 1, height: 1, backgroundColor: 'black'}} />
           <View>
-            <Text style={[headline.Headline5, {width: 200, textAlign: 'center', color:themeColor.Dark60 }]}>Attributes to be verified</Text>
+            <Text style={[headline.Headline5, {width: 200, textAlign: 'center', color:themeColor.DarkDark60 }]}>Attributes to be verified</Text>
           </View>
           <View style={{flex: 1, height: 1, backgroundColor: 'black'}} />
         </View>

@@ -21,19 +21,23 @@ const CredListComponent = (props) => {
 
   // toPage: DefinitionDetail、CredentialDetail
   const onPressItem = (itemData) => {
-
+    console.log('list', list);
+    console.log('list.length', list.length);
+    console.log('itemData', itemData);
+    
     props.navigation.navigate({
       name:props.toPage,
       params:{
         from:props.from,
-        credData:itemData
+        credData:itemData,
+        navigation:props.navigation
       }
     })
   }
 
   const CardTypeA = ({index, item}) => {
     return (
-      <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
+      <TouchableOpacity key={`cred${index}`} style={styles.card} onPress={()=>{onPressItem(item)}}>
         <ImageBackground source={require(`../../assets/background/CredentailCardBG01.png`)} resizeMode="stretch" style={styles.backgroundImage}>
           <View style={styles.header}>
             <View style={styles.nameArea}>
@@ -44,7 +48,7 @@ const CredListComponent = (props) => {
             </View>           
           </View>
           <View style={styles.body}>
-            <Text style={headline.Headline3}>employee ID card</Text>
+            <Text style={headline.Headline3}>{item.schema_id}</Text>
           </View>
           <View style={styles.footer}>
             <Text style={styles.dateText}>A12345678</Text>
@@ -56,7 +60,7 @@ const CredListComponent = (props) => {
 
   const CardTypeB = ({index, item}) => {
     return (
-      <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
+      <TouchableOpacity key={`cred${index}`} style={styles.card} onPress={()=>{onPressItem(item)}}>
         <ImageBackground source={require(`../../assets/background/CredentailCardBG02.png`)} resizeMode="stretch" style={styles.backgroundImage}>
           <View style={styles.header}>
             <View style={styles.nameArea}>
@@ -79,7 +83,7 @@ const CredListComponent = (props) => {
 
   const CardTypeC = ({index, item}) => {
     return (
-      <TouchableOpacity key={index} style={styles.card} onPress={()=>{onPressItem(item)}}>
+      <TouchableOpacity key={`cred${index}`} style={styles.card} onPress={()=>{onPressItem(item)}}>
         <ImageBackground source={require(`../../assets/background/CredentailCardBG03.png`)} resizeMode="stretch" style={styles.backgroundImage}>
           <View style={styles.header}>
             <View style={styles.nameArea}>
@@ -106,10 +110,13 @@ const CredListComponent = (props) => {
     {
       list.length === 0 ? null : (
         list.map((item, index) => {
-          const card = index%3 === 0 ? <CardTypeA item={item} index={index}/>
-                      : index%3 === 1 ? <CardTypeB item={item} index={index}/>
-                      : index%3 === 2 ? <CardTypeC item={item} index={index}/>
+          console.log('===index===', index);
+          const card = index%3 === 0 ? <CardTypeA key={`card${index}`} item={item} index={index}/>
+                      : index%3 === 1 ? <CardTypeB key={`card${index}`} item={item} index={index}/>
+                      : index%3 === 2 ? <CardTypeC key={`card${index}`} item={item} index={index}/>
                       : <CardTypeA item={item} index={index}/>;
+          console.log('===card===', card);
+
           return card;
         }
       )
@@ -117,7 +124,8 @@ const CredListComponent = (props) => {
   }                     
   </ScrollView>
   )
-   
+
+
   return listContent;
 }
 

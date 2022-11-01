@@ -16,49 +16,74 @@ import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
 
 const ApplyCredential = (props) => {
-  const [isSelectRuleShow, setIsSelectRuleShow] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState();
 
-  const [attributesData, setAttributesData] = useState([{
-    key:'Email',
-  },
-  {
-    key:'Mobile',
-  },
-  {
-    key:'ID',
-  },
-  {
-    key:'test1111',
-  },
-  {
-    key:'test1111',
-  },
-  {
-    key:'test1111',
-  },
-  {
-    key:'test1111',
-  },
-]);
+
+  const [writeAttributes, setWriteAttributes] = useState([]);
+  const [onlyDisplayAttributes, setOnlyDisplayAttributes] = useState([]);
+  const [mergedWriteAttributes, setMergedWriteAttributes] = useState([]);
+
+
+  useEffect(() => {
+    try{
+      let credFormat = props.route.params.credentialInfo.credentialTemplate.credentialDefinition.format;
+      let credValue = props.route.params.credentialInfo.credentialTemplate.value;
+
+      let writeArray = [];
+      let displayArray = [];
+
+      //get user write attributes
+      credFormat.forEach((item) => {
+        if(item.user_write === true){
+          writeArray.push(item);
+        }
+      });
+
+      // get display only attribute and merge its value
+      credValue.forEach((it) => {
+        displayArray.push(it);
+      });
+
+      setWriteAttributes(writeArray);
+      setOnlyDisplayAttributes(displayArray);
+
+    }catch(error){
+      console.log(error);
+    }
+  },[])
+
+  const handleInputChange = (text, item, index) => {
+    let arr = [...writeAttributes];
+    arr[index].value = text
+    setMergedWriteAttributes(arr);
+  };
 
   const FormList = () => {
-    const mergedList = attributesData.map((item) => {
-      return(
-        <ListItem containerStyle={styles.listItem} >
-          <ListItem.Content>
-            <View style={styles.subtitleView}>
-              <Text style={[headline.Headline4, {color:themeColor.DarkDark}]}>{item.key}</Text>
-            </View>           
-            <View style={styles.contenView}>
-              <TextInput style={styles.input}></TextInput>
-            </View>
-          </ListItem.Content>
-        </ListItem>
-      )
-    })
+    let temp = null;
+    if(writeAttributes.length !== 0){
+      temp = writeAttributes.map((item, index)=>{
+        if(item.user_write === true){
+          return(
 
-    return mergedList;
+            <ListItem containerStyle={styles.listItem} >
+              <ListItem.Content>
+                <View style={styles.subtitleView}>
+                  <Text style={[headline.Headline4, {color:themeColor.DarkDark}]}>{item.key}</Text>
+                </View>           
+                <View style={styles.contenView}>
+                  <TextInput onChangeText={(text)=>{handleInputChange(text, item, index)}} style={styles.input}></TextInput>
+                </View>
+              </ListItem.Content>
+            </ListItem>
+          )
+        }else{
+          return null;
+        }
+      })
+    }
+      
+    return temp;
+
+
   }
 
   const onReScan = () => {
@@ -66,8 +91,18 @@ const ApplyCredential = (props) => {
   }
 
   const onNext = () => {
-    props.navigation.navigate('ApplyCredConfirm');
-
+    props.navigation.navigate({
+      name:'ApplyCredConfirm',
+      params:{
+        mergedWriteAttributes: mergedWriteAttributes,
+        onlyDisplayAttributes:onlyDisplayAttributes,
+        credentialInfo: props.route.params.credentialInfo,
+        cred_offer_json: props.route.params.cred_offer_json,
+        cred_id: props.route.params.cred_id,
+        cred_def_id: props.route.params.cred_def_id,
+        from:props.route.params.from
+      }
+    });
   }
 
   // render page
@@ -82,7 +117,7 @@ const ApplyCredential = (props) => {
             end= {{ x: 1, y: 1 }}
             style={styles.infoArea}
           >
-            <Text style={[content.Small, {color:themeColor.Dark60}]}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text>
+            <Text style={[content.Small, {color:themeColor.DarkDark60}]}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text>
           </LinearGradient>
           <ListItem containerStyle={styles.listItem} >
             <ListItem.Content>

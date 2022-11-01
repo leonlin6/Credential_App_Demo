@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Text,
   ImageBackground,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from 'react-native';
 import CredListComponent from '../../../components/common/CredListComponent';
 import {connect} from 'react-redux';
@@ -18,7 +19,8 @@ import LinearGradient from 'react-native-linear-gradient';
 
 
 const CredentialDetail = (props) => {
-  const [list, setList] = useState('');
+  const [list, setList] = useState();
+  const [showLoading, setShowLoading] = useState(true);
 
   const [credData, setCredData] = useState([{
       key:'test1111',
@@ -26,56 +28,46 @@ const CredentialDetail = (props) => {
     }
   ]);
   
-  const [attributesData, setAttributesData] = useState([{
-      key:'Age',
-      value:'20'
-    },
-    {
-      key:'Gender',
-      value:'MALE'
-    },
-    {
-      key:'ID',
-      value:'A123456789'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    },
-    {
-      key:'test1111',
-      value:'1111'
-    }
-  ]);
+  useEffect(() => {
+    console.log('====props.route.params.from===', props.route.params.from);
 
+    if (props.route.params.from === 'CredentialList'){
+      console.log('----props.route.params.credData----',props.route.params.credData);
+      handleCredData(props.route.params.credData);
+    } else if (props.route.params.from === 'GetCredential'){
+      handleGetCredData(props.route.params.mergedDetailData);
+    }
+
+    setTimeout(() => {
+      setShowLoading(false);
+    }, 500);
+  }, []);
+
+
+  //處理Get Cred處理過後的array cred資料
+  const handleGetCredData = (data) => {
+    const temp = data.map((item) => {
+      return {
+        key:item.key,
+        value:item.value
+      }
+    })
+    console.log('---temp---', temp);
+    setList(temp);
+  }
+
+
+  //處理Wallet中get_cred出來的object cred資料
+  const handleCredData = (data) => {
+    const credData = Object.keys(data.attrs).map((keyName) => {
+      return {
+        key:keyName,
+        value:data.attrs[keyName]
+      }
+    })
+    console.log('---credData---', credData);
+    setList(credData);
+  }
 
   const onCloseDetail = () => {
     props.navigation.goBack();
@@ -86,7 +78,7 @@ const CredentialDetail = (props) => {
   }
 
   const DetailList = () => {
-    const mergedList = attributesData.map((item) => {
+    const mergedList = list.map((item, index) => {
       return(
         <ListItem 
           containerStyle={styles.listItem}
@@ -96,6 +88,7 @@ const CredentialDetail = (props) => {
             end: { x: 1, y: 1 },
           }}
           ViewComponent={LinearGradient}
+          key={`list${index}`}
         >
           <ListItem.Content>
             <View style={styles.subtitleView}>
@@ -131,6 +124,13 @@ const CredentialDetail = (props) => {
     );
   }
 
+  if(showLoading){
+    return(
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" />
+      </View> 
+    )
+  }
   return (
     <View style={styles.container}>
       <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>

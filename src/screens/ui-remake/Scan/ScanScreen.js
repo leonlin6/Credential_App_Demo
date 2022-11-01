@@ -112,7 +112,7 @@ const ScanScreen = (props) => {
         console.log('----cred_def_id---',cred_def_id);
           
           props.navigation.navigate({
-            name:'Form',
+            name:'ApplyCredential',
             params:{
               from:'GetCredential',
               credentialInfo:credentialInfo,
