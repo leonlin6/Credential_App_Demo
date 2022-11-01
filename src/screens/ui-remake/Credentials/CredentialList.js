@@ -19,41 +19,40 @@ import { themeSpacing } from '@rneui/themed/dist/config/ThemeProvider';
 const CredentialList = (props) => {
   const [displayType, setDisplayType] = useState('card');
   const [displayTypeIcon, setDisplayTypeIcon] = useState('reader');
-  const [credData, setCredData] = useState([{
-    cred_def_id:'test1111'
-  },
-  {
-    cred_def_id:'test22222'
-  },
-  {
-    cred_def_id:'test3333'
-  },
-]);
+  const [credData, setCredData] = useState([]);
 
   useEffect(() => {
     const getCredFromWallet = async () => {
       console.log('====getCredFromWallet====');
       console.log('---props.walletHandle---',props.walletHandle);
 
-      let response = await indy.proverGetCredentials(props.walletHandle);
-      setCredData(response);
-      console.log('----setCredData----' , response);
-    }
+      //不是第一次執行再去取wallet中的cred
+      if(!props.isFirstLogin){
+        console.log('----setCredData----' , response);
+        console.log('====not FirstLogin====' , props.isFirstLogin);
+ 
+        const response = await indy.proverGetCredentials(props.walletHandle);
+        setCredData(response);
+      }else{
+        console.log('====is first login====' , props.isFirstLogin);
+        setCredData([]);
+      }
 
-    // getCredFromWallet();
+
+    }
+    console.log('props.isFirstLogin======',props.isFirstLogin);
+
+
+    getCredFromWallet();
 
   },[])
 
-  const onClickDisplay = () => {
-    if(displayType === 'card'){
-      setDisplayType('list');
-      setDisplayTypeIcon('ios-card-outline');
-    }else{
-      setDisplayType('card');
-      setDisplayTypeIcon('reader');
-    }
-  }
+  const onSetting = () => {
 
+  }
+  const onHistory = () => {
+
+  }
 
   // render page
   return (
@@ -66,12 +65,12 @@ const CredentialList = (props) => {
           <View style={styles.btnArea}>
             <TouchableOpacity
               style={styles.btn}
-              onPress={onClickDisplay}>
+              onPress={onSetting}>
               <SettingWhiteIcon></SettingWhiteIcon>
             </TouchableOpacity>          
             <TouchableOpacity
               style={styles.btn}
-              onPress={onClickDisplay}>
+              onPress={onHistory}>
               <HistoryWhiteIcon ></HistoryWhiteIcon>
             </TouchableOpacity>            
           </View>
@@ -168,6 +167,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => {  
   return {
       walletHandle: state.walletHandle,
+      isFirstLogin: state.isFirstLogin
   };
 }
 

@@ -22,13 +22,19 @@ const poolHandleReducer = (currentPoolHandle = null, action) => {
     return currentPoolHandle;
 };
 
-const masterSecretReducer = (currentMasterSecret = null, action) => {
+const masterSecretReducer = (currentMasterSecret = '', action) => {
     if(action.type === 'SET_MASTER_SECRET'){
         return action.payload;
     }
     return currentMasterSecret;
 };
 
+const isFirstLoginReducer = (currentIsFirstLogin = null, action) => {
+    if(action.type === 'SET_IS_FIRST_LOGIN'){
+        return action.payload;
+    }
+    return currentIsFirstLogin;
+};
 
 const proofReqReducer = (proofReq = null, action) => {
     if(action.type === 'SET_PROOF_REQ'){
@@ -79,6 +85,8 @@ export default combineReducers({
     proofReq: proofReqReducer,
     schemas : schemasReducer,
     defs: defsReducer,
-    verifyId: verifyIdReducer
+    verifyId: verifyIdReducer,
+    isFirstLogin: isFirstLoginReducer
+
     
 });

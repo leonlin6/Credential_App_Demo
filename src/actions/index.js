@@ -33,6 +33,13 @@ export const setMasterSecret = (masterSecret) => {
     });
 } 
 
+export const setIsFirstLogin = (isFirstLogin) => {
+    //Return an action
+    return({
+        type: 'SET_IS_FIRST_LOGIN',
+        payload: isFirstLogin
+    });
+} 
 export const setProof = (proof) => {
     //Return an action
     return({

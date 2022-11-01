@@ -23,6 +23,14 @@ export const headline = {
   }
 }
 
+export const hint = {
+  Default:{
+    fontFamily: 'RedHatDisplay-Bold',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+}
+
 export const content = {
   DefaultBold:{
     fontFamily: 'RedHatDisplay-Bold',
@@ -48,9 +56,10 @@ export const content = {
 }
 
 export const themeColor = {
-  Dark60:'rgb(123,128,139)',
   DarkDark:'rgb(35,43,62)',
   DarkDarkOp8:'rgba(35,43,62, 0.8)',
+  DarkDark0:'rgb(255,255,255)',
+  DarkDark60:'rgb(123,128,139)',
 
   DecoGreen:'rgb(130,255,150)',
   SemanticWarningRed:'rgb(239,71,71)',

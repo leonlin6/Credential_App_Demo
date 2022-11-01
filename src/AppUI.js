@@ -14,25 +14,25 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-// Login Page
-import RootStackScreen from './navigators/RootStackScreen';
 
 // navigators
 import CredentialList from './screens/ui-remake/Credentials/CredentialList';
 import Scan from './screens/ui-remake/Scan/ScanScreen';
+import Empty from './screens/ui-remake/Scan/Empty';
 import Verify from './screens/ui-remake/Verify/Verify';
 
 // stack
+// import Login from './screens/ui-remake/Login/LoginScreen';
+// import Splash from './screens/ui-remake/Login/SplashScreen';
+
 import CredentialDetail from './screens/ui-remake/Credentials/CredentialDetail';
-import Empty from './screens/ui-remake/Scan/Empty';
 import ApplyCredential from './screens/ui-remake/Scan/ApplyCredential';
 import ApplyCredConfirm from './screens/ui-remake/Scan/ApplyCredConfirm';
 
 import VerifyRule from './screens/ui-remake/Scan/VerifyRule';
 import SelectCredential from './screens/ui-remake/Scan/SelectCredential';
 import VerifyCredConfirm from './screens/ui-remake/Scan/VerifyCredConfirm';
-import VerifyResult from './screens/ui-remake/Scan/VerifyResult';
-
+import VerifyResult from './screens/ui-remake/Common/VerifyResult';
 
 // SVG
 import TabCredentialsIcon from './assets/icons/SVG/TabCredentials.svg';
@@ -48,6 +48,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { headline, themeColor } from './styles/theme.style';
+import RootStackUI from './screens/ui-remake/Login/RootStackUI';
 
 const AppUI = (props) => {
 
@@ -82,6 +83,21 @@ const AppUI = (props) => {
 
 
   const TabContainer = () => {
+    const CustomTabBarButton = ({navigation}) => {
+      return (
+        <TouchableOpacity 
+          onPress={()=>{navigation.navigate('Scan')}}
+          style={{
+            top: 0,
+            justifyContent:'center',
+            alignItems:'center'
+          }}>
+          <LinearGradient colors={['#82ff96','#7cffff']} style={{width:60, height:60, borderRadius:8, justifyContent:'center', alignItems:'center'}}>
+            <ScannerIcon></ScannerIcon>
+          </LinearGradient>
+        </TouchableOpacity>
+      )
+    }
 
     const TabBar = ({ state, descriptors, navigation }) => {
       return (
@@ -121,6 +137,7 @@ const AppUI = (props) => {
 
             return (
               <TouchableOpacity
+                key={route.name}
                 style={{justifyContent:'center', alignItems:'center', width:100}}
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
@@ -137,30 +154,7 @@ const AppUI = (props) => {
       );
     }
 
-    const CustomTabBarButton = ({navigation}) => {
-      return (
-        <TouchableOpacity 
-          onPress={()=>{navigation.navigate('Scan')}}
-          style={{
-            top: 0,
-            justifyContent:'center',
-            alignItems:'center'
-          }}>
-          <LinearGradient colors={['#82ff96','#7cffff']} style={{width:60, height:60, borderRadius:8, justifyContent:'center', alignItems:'center'}}>
-            <ScannerIcon></ScannerIcon>
-          </LinearGradient>
-        </TouchableOpacity>
-      )
-    }
-
-    const ScanStack = () => {
-      return (
-        <Stack.Navigator>
-          <Stack.Screen name="Scan" component={Scan} />
-        </Stack.Navigator>
-      )
-    }
-
+    // return to TabContainer
     return(
       <Tab.Navigator 
         initialRouteName="CredentialList"
@@ -192,6 +186,7 @@ const AppUI = (props) => {
     );
   }
 
+  // render page
   return (
     <NavigationContainer>  
       <Stack.Navigator
@@ -208,8 +203,13 @@ const AppUI = (props) => {
            ),
         }}
       >
-        <Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>
 
+        {/* <Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen> */}
+          {props.loginToken !== null ? 
+            (<Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>)
+            : 
+            (<Stack.Screen name='RootStackUI' component={RootStackUI} options={{headerShown: false}}></Stack.Screen>)
+          } 
         <Stack.Screen name='CredentialDetail' component={CredentialDetail} options={{headerShown: false}}></Stack.Screen>
         <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
         <Stack.Screen name='ApplyCredential' component={ApplyCredential} ></Stack.Screen>

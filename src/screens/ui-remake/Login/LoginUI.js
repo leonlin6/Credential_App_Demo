@@ -2,12 +2,16 @@ import React, {useEffect, useState, useRef} from 'react';
 import { 
   View, 
   Text, 
+  Image,
   TextInput, 
   StyleSheet, 
   TouchableOpacity,
   ActivityIndicator,
   Animated,
   Keyboard,
+  ImageBackground ,
+  BackHandler,
+  Alert
 } from 'react-native';
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,32 +20,42 @@ import * as Animatable from 'react-native-animatable';
 import indy from 'indy-sdk-react-native';
 import axios from 'axios';
 import RNFS from 'react-native-fs';
-import { ENDPOINT_BASE_URL } from '../../APIs/APIs';
+import { ENDPOINT_BASE_URL } from '../../../APIs/APIs';
+
+import { SafeAreaView } from 'react-native-safe-area-context'
+import LinearGradient from 'react-native-linear-gradient';
+
+// icon
+import Logo from '../../../assets/icons/SVG/Logo.svg';
+import NameMark from '../../../assets/icons/SVG/NameMark.svg';
+import QuickLogin from '../../../assets/icons/SVG/QuickLogin.svg';
+
 
 // redux
-import {connect} from 'react-redux';
-import {setLoginToken, setWalletHandle, setPoolHandle, setMasterSecret} from '../../actions/index'
+import { connect } from 'react-redux';
+import { setLoginToken, setWalletHandle, setPoolHandle, setMasterSecret, setIsFirstLogin } from '../../../actions/index'
+import { headline, content, themeColor, hint } from '../../../styles/theme.style';
+import { set } from 'react-native-reanimated';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
-const LOGO_CIRCLE_HEIGHT = 150;
-const LOGO_SMALL_CIRCLE_HEIGHT = 100;
-const LOGO_WIDTH = 75;
-const LOGO_SMALL_WIDTH = 50;
-
-const LoginScreen = (props) => {
-  const [userName , setUserName] = useState('');
-  const [password , setPassword] = useState('');
+const LoginUI = (props) => {
 
   const [isLoading, setIsLoading] = useState(false);
-  const [inputIDFocus, setInputIDFocus] = useState(false);
-  const [inputPasswordFocus, setInputPasswordFocus] = useState(false);
-  const [passwordShow, setPasswordShow] = useState(false);
 
-  const IDWrapStyle = inputIDFocus? styles.inputWrapFocus : styles.inputWrap;
-  const passwordWrapStyle = inputPasswordFocus? styles.inputWrapFocus : styles.inputWrap;
-  const [keyboardStatus, setKeyboardStatus] = useState(undefined);
+  const inputValue0 = useRef();
+  const inputValue1 = useRef();
+  const inputValue2 = useRef();
+  const inputValue3 = useRef();
+  const valueRefContainer = [inputValue0, inputValue1, inputValue2, inputValue3];
 
-  var resizeLogoCircleAnim = useRef(new Animated.Value(LOGO_CIRCLE_HEIGHT)).current;
-  var resizeLogoAnim = useRef(new Animated.Value(LOGO_WIDTH)).current;
+  const refInput0 = useRef();
+  const refInput1 = useRef();
+  const refInput2 = useRef();
+  const refInput3 = useRef();
+  const inputRefContainer = [refInput0, refInput1, refInput2, refInput3];
+
+  const currentRefIndex = useRef();
+
 
   const walletConfig = {id: 'sbadmin@gmail.com'};
   const walletCredentials = {key: '12345678'};
@@ -49,6 +63,10 @@ const LoginScreen = (props) => {
   let isFirstLogin;
   let WH;
   let prover_link_secret_name = 'link_secret234';
+
+  useEffect(() => {
+    currentRefIndex.current = 0;
+  },[]);
 
   useEffect(() => {
     const determineFirstLogin = async () => {
@@ -64,52 +82,14 @@ const LoginScreen = (props) => {
 
   })
 
-  // run keyboard animation stuff
   useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      Animated.timing(resizeLogoCircleAnim,{
-        duration: 700,
-        toValue: LOGO_SMALL_CIRCLE_HEIGHT,
-        useNativeDriver: false
-      }).start();
+    if(props.walletHandle !== null){
+      console.log('props create master secret in');
+      createMasterSecret();
 
-      Animated.timing(resizeLogoAnim,{
-        duration: 700,
-        toValue: LOGO_SMALL_WIDTH,
-        useNativeDriver: false
-      }).start();
-    });
+    }
 
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(resizeLogoCircleAnim,{
-        duration: 500,
-        toValue: LOGO_CIRCLE_HEIGHT,
-        useNativeDriver: false
-      }).start();
-
-      Animated.timing(resizeLogoAnim,{
-        duration: 500,
-        toValue: LOGO_WIDTH,
-        useNativeDriver: false
-      }).start();
-    });
-
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }
-  ,[]);
-
-useEffect(() => {
-  if(props.walletHandle !== null){
-    console.log('props create master secret in');
-    createMasterSecret();
-
-  }
-
-},[props.walletHandle])
+  },[props.walletHandle])
 
   // indy sdk control function
   const createWallet = async () => {
@@ -223,6 +203,9 @@ useEffect(() => {
   
   // indy sdk control - first login / not first login
   const initPoolandWallet = async () => {
+    console.log('set is first login', isFirstLogin);
+    props.setIsFirstLogin(isFirstLogin);
+
     if(isFirstLogin){
       console.log('------create pool & wallet-----');
       await createPool();
@@ -230,6 +213,7 @@ useEffect(() => {
       await createWallet();
       await openWallet();
       await createMasterSecret();
+
     }else{
       console.log('------not create pool & wallet-----');
       await openPool();
@@ -272,167 +256,136 @@ useEffect(() => {
 
   };
 
-  const onPressLogin = () => {
-    try{
+  const Divider = () => {
+    return (
+      <View style={styles.dividerArea}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{flex: 1, height: 1, backgroundColor: themeColor.DarkDark60}} />
+          <View>
+            <Text style={[headline.Headline5, {width: 50, textAlign: 'center', color:themeColor.DarkDark60 }]}>Or</Text>
+          </View>
+          <View style={{flex: 1, height: 1, backgroundColor: themeColor.DarkDark60}} />
+        </View>
+      </View>
+    );
+  }
+
+  const onChangePin = (text, valueRef, refIndex) => {
+    console.log('=======onChangePin start=======',text);
+
+    console.log('text',text);
+    valueRef.current = text;
+    console.log('onChangePin currentRefIndex', refIndex);
+
+    if(refIndex !== 3){
+      currentRefIndex.current = refIndex + 1;
+      console.log('currentRefIndex', currentRefIndex.current);
+      inputRefContainer[refIndex+1].current.focus();
+    }else{
+      console.log('currentRefIndex', currentRefIndex.current);
+      console.log('end',valueRefContainer);
       setIsLoading(true);
       requestLogin();
-    }catch(error){
-      console.log('error', error);
     }
   }
 
-  const handleUserNameChange = (val) => {    
-    if( val.trim().length >= 8 ) {
-      setUserName(val);
+  const handleKeyDown = (e) => {
+    if(e.nativeEvent.key == "Backspace"){
+      if( currentRefIndex.current === 0){
+        valueRefContainer[0].current = 0;
+      }else{
+        console.log('=====handleKeyDown currentRefIndex',currentRefIndex.current);
+        valueRefContainer[currentRefIndex.current-1].current = '';
+        inputRefContainer[currentRefIndex.current-1].current.focus();
+        currentRefIndex.current = currentRefIndex.current - 1;
 
-
-      // setData({
-      //     ...data,
-      //     id: val,
-      //     isPasswordValid: true
-      // });
-    } else {
-      setUserName(val);
-
-
-
-      // setData({
-      //     ...data,
-      //     id: val,
-      //     isPasswordValid: false
-      // });
+      }
     }
   }
 
-  const handlePasswordChange = (val) => {
-    // if( val.trim().length >= 8 ) {
-    //   setData({
-    //       ...data,
-    //       pw: val,
-    //       isPasswordValid: true
-    //   });
-    // } else {
-    //   setData({
-    //       ...data,
-    //       pw: val,
-    //       isPasswordValid: false
-    //   });
-    // }
-    setPassword(val);
+  const onPinTarget = () => {
+    console.log('onPinTarget currentRefIndex', currentRefIndex);
+    inputRefContainer[currentRefIndex.current].current.focus();
+  }
+
+  const onQuickLogin = () => {
+
 
   }
 
-  const onPwIconPress = () => {
-    setPasswordShow(!passwordShow);
-  }
-  
 
-  if(isLoading){
+
+  const SinglePinTextInput = (props) => {
+    const [inputBorderColor, setInputBorderColor] = useState('rgb(246,247,247)');
+
     return(
-      <View style={styles.loadingWrap}>
-        <ActivityIndicator size='large'></ActivityIndicator>
-        <Text style={styles.loadingText}>初始化錢包</Text>
-      </View>
+      <TextInput         
+        style={[styles.pinInput, {borderColor:inputBorderColor, borderWidth:3}]}
+        onChangeText={(text)=>{onChangePin( text, props.valueRef, props.refIndex)}}
+        value={props.valueRef.current}
+        onFocus={(e)=>{setInputBorderColor(themeColor.SemanticHighlight);}}    
+        onBlur={(e)=>{setInputBorderColor('rgb(246,247,247)');}}
+        keyboardType="numeric"
+        maxLength={1}
+        textAlign='center'
+        returnKeyType='next'
+        ref={inputRefContainer[props.refIndex]}
+        cursorColor='rgb(246,247,247)'
+        selectTextOnFocus={true}
+        onKeyPress={(e)=>{handleKeyDown(e)}}
+      >
+      </TextInput>
     )
   }
 
   return (
-    <View style={styles.container} >
-      <View style={styles.header}>
-        <View style={styles.logoWrap}>
-          <View style={styles.circleWrap}>
-            <Animated.View style={[styles.circle, {height:resizeLogoCircleAnim, width:resizeLogoCircleAnim}]}>
-              <Animated.Image 
-                style={[styles.logo, {width:resizeLogoAnim}]}
-                source={require('../../assets/images/logo.png')}
-                resizeMode="stretch"
-              ></Animated.Image>
-            </Animated.View>
-          </View>
-        </View>
-        <Animatable.View
-          animation="lightSpeedIn"
-          duration={1000} 
-          delay={100}
-          style={styles.logoTextWrap}>
-          <Text style={styles.logoText}>Snowbridge</Text>
-        </Animatable.View>
-      </View>
-      {/* <Animatable.View 
-        animation="fadeInUpBig"
-        style={styles.footer}> */}
-      <View style={styles.footer}>
-        <View style={styles.inputContainer}>
-          <View style={IDWrapStyle}> 
-            <View style={styles.idInputIcon}>
-              <Ionicons name='md-person-circle-sharp' size={25} ></Ionicons>
-            </View>
-            <View style={styles.idIinput}>
-              <TextInput
-                placeholder="電子信箱"
-                onChangeText={(val) => {handleUserNameChange(val)}}
-                style={{padding:0, margin:0}}
-                onFocus={() => {setInputIDFocus(true)}}
-                onBlur={() => {setInputIDFocus(false)}}
-                value={userName}
-              />
-            </View>
-          </View>
-          <View style={passwordWrapStyle}>
-            <View style={styles.idInputIcon}>
-              <Ionicons name='key' size={25} ></Ionicons>
-            </View>
-            <View style={styles.pwInput}>
-              <TextInput
-                style={{padding:0,margin:0}}
-                placeholder="請輸入使用者密碼"
-                onChangeText={(val) => {handlePasswordChange(val)}}
-                onFocus={() => {setInputPasswordFocus(true)}}
-                onBlur={() => {setInputPasswordFocus(false)}} 
-                secureTextEntry={!passwordShow}
-                value={password}             
-              />
-            </View>
-            <View style={styles.passwordInputIcon}>                
-              <TouchableOpacity onPress={onPwIconPress}>
-                <Ionicons 
-                  name = {passwordShow ? 'md-eye' : 'md-eye-off'}
-                  size={25} 
-                ></Ionicons>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={styles.loginBtn}
-            onPress={onPressLogin}
-          >
-            <Text>Login</Text>
-          </TouchableOpacity>
-
-        </View>
-      {/* </Animatable.View> */}
-      </View>
+    isLoading ? (
+      <View style={styles.loadingWrap}>
+      <ActivityIndicator size='large'></ActivityIndicator>
+      <Text style={styles.loadingText}>初始化錢包</Text>
     </View>
-  );
+    )
+    :
+    (
+      <SafeAreaView style={styles.container}>
+      <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode={'stretch'} style={styles.background}>
+        <View style={styles.header}>
+          <Image style={styles.logo} source={require('../../../assets/icons/PNG/Logo.png')}></Image>
+          <Text style={[headline.Headline1, styles.title]}>LOGIN</Text>
+        </View>
+        <View style={styles.body}>
+          <View style={styles.loginArea}>
+            <View style={styles.hintArea}>
+              <Text style={[hint.Default, styles.hint]}>Login as whangwang0430@gmail.com</Text>
+            </View>
+            <View style={styles.pincodeArea}>
+              <Text style={[headline.Headline4, styles.pincodeTitle]}>PIN Code</Text>
+              <View style={styles.inputArea}>
+                <TouchableOpacity onPress={onPinTarget} style={{flex:1, position:'absolute', width:'100%', height:'100%', zIndex:2}}></TouchableOpacity>
+                <SinglePinTextInput valueRef={inputValue0} refIndex={0} ></SinglePinTextInput>
+                <SinglePinTextInput valueRef={inputValue1} refIndex={1} ></SinglePinTextInput>
+                <SinglePinTextInput valueRef={inputValue2} refIndex={2} ></SinglePinTextInput>
+                <SinglePinTextInput valueRef={inputValue3} refIndex={3} ></SinglePinTextInput>
+              </View>
+            </View>
+            <Divider></Divider>
+            <TouchableOpacity onPress={onQuickLogin} style={styles.quickLoginArea}>
+              <QuickLogin style={{marginRight:6}}></QuickLogin>
+              <Text style={[content.DefaultBold, styles.quickLoginText]}>Quick Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
+    )
+
+    )
 }
 
 const styles = StyleSheet.create({
   container:{
     flex: 1,
-    fontSize: 25,
-    backgroundColor:'white',
-    justifyContent:'flex-end',
-
   },
-  header:{
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center',
-    paddingTop: 30,
-    backgroundColor:'#0f659d',
-    borderBottomRightRadius: 125,
-    paddingHorizontal: 30
-  },  
   loadingWrap:{
     flex:1,
     justifyContent: 'center',
@@ -443,99 +396,87 @@ const styles = StyleSheet.create({
     fontSize:20,
     color:'black'
   },  
-  logoWrap:{
-    flex:2,
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    padding: 5,
-  },
-  circleWrap: {
-    backgroundColor: 'white',
+  background:{
+    flex:1,
     justifyContent:'center',
-    alignItems:"center",
-    padding: 5,
-    borderRadius: 1000,
-    minHeight: 75
+    alignItems:'center',
   },
-  circle:{
+  header:{
+    flex: 2,
     justifyContent:'center',
-    alignItems:"center",
-    borderWidth: 3,
-    borderColor: 'black',
-    borderRadius: 1000, 
+    alignItems:'center',
   },
   logo:{
-    alignItems: 'center',
+    height:81,
+    width:81,
+    marginBottom:12
   },
-  logoTextWrap:{
-    flex: 1,
+  title:{
+    color:themeColor.DarkDark0
   },
-  logoText:{
-    color:'white',
-    fontSize: 36,
-    fontFamily:"DancingScript-Regular",
-    
-  },  
-  footer:{
-    flex:1,
-    backgroundColor: '#0f659d',
-  },
-
-  inputContainer:{
-    flex:2,
-    backgroundColor: 'white',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    borderTopLeftRadius: 125,
-    paddingTop:75
-  },
-  inputWrap:{
-    width: 250,
-    borderBottomWidth: 1, 
-    borderColor: 'black',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    flexWrap:'nowrap',
-    marginBottom: 25
-  },  
-  inputWrapFocus:{
-    width: 250,    
-    borderBottomWidth: 1, 
-    borderColor: '#0f659d',    
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    marginBottom: 25
-  },  
-
-  idIinput:{
+  body:{
     flex:5,
-    borderWidth: 0,
-    paddingBottom:0,
-    width: 100,
-    height:25
+    paddingHorizontal:12
+
+  },  
+  loginArea:{
+    width: 343,
+    height:281,
+    backgroundColor:themeColor.DarkDark0,
+    borderRadius:6,
+    paddingVertical:24,
+    paddingHorizontal:16
+
   },
-  idInputIcon:{
+  hintArea:{
     flex:1,
-    height:25,
+    justifyContent:'center',
+    alignItems:'center',
   },
-  pwInput:{
-    flex: 4,
-    borderWidth: 0,
-    paddingBottom:0,
-    width: 100,
-    height:25
+  hint:{
+    color: themeColor.DarkDark60,
+    justifyContent:'center',
+    alignItems:'center'
   },
-  passwordInputIcon:{
+  pincodeArea:{
+    flex:2,
+
+  },
+  inputArea:{
+    flexDirection:'row',
+    flex:2,
+    justifyContent:'space-evenly',
+
+
+  },
+  pinInput: {
+    height: 50,
+    width:65,
+    borderWidth: 1,
+    borderColor:'rgb(246,247,247)',
+    padding: 10,
+    borderRadius:8,
+    backgroundColor:'rgb(246,247,247)'
+  },
+  pincodeTitle:{
+    marginBottom:8,
+    color: themeColor.DarkDark,
+    
+  },
+  dividerArea:{
     flex:1,
-    height:25
+    alignItems:'center',
+    justifyContent:'center'
   },
-  loginBtn:{
-    borderWidth: 1,      
-    borderColor: '#0f659d',
-    borderRadius: 10,
-    width:250,
-    alignItems:'center',    
-    paddingVertical:5
+  quickLoginArea:{
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center'
+
+  },
+  quickLoginText:{
+    color: themeColor.SemanticHighlight
   }
 });
 
@@ -550,4 +491,4 @@ const mapStateToProps = (state) => {
   };
 }
 
-export default connect(mapStateToProps, {setLoginToken, setWalletHandle, setPoolHandle, setMasterSecret})(LoginScreen);
+export default connect(mapStateToProps, {setLoginToken, setWalletHandle, setPoolHandle, setMasterSecret, setIsFirstLogin})(LoginUI);
