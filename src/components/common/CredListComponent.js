@@ -110,18 +110,16 @@ const CredListComponent = (props) => {
     {
       list.length === 0 ? null : (
         list.map((item, index) => {
-          console.log('===index===', index);
           const card = index%3 === 0 ? <CardTypeA key={`card${index}`} item={item} index={index}/>
                       : index%3 === 1 ? <CardTypeB key={`card${index}`} item={item} index={index}/>
                       : index%3 === 2 ? <CardTypeC key={`card${index}`} item={item} index={index}/>
                       : <CardTypeA item={item} index={index}/>;
-          console.log('===card===', card);
 
           return card;
-        }
+        })
       )
-    )
-  }                     
+    }  
+    {/* <View style={styles.bottomSpace}></View> */}
   </ScrollView>
   )
 
@@ -152,33 +150,29 @@ const styles = StyleSheet.create({
     flexDirection:'row',
   },
   nameArea:{
-    flex:1,
-
   },  
   dateArea:{
     flex:1,
   },
   issuerName:{
-
   },
   dateText:{
     height:20,
     color:'black',
     textAlign:'right',
     paddingRight:5
-
   },
   body:{
     flex:3,
-
   },
   footer:{
     flex:1,
-
   },
-
   credentialName:{
     color:'black',
+  },
+  bottomSpace:{
+    height:80
   }
 });
   

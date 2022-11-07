@@ -8,36 +8,53 @@ import {
 } from 'react-native';
 import { ListItem } from '@rneui/themed'
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { headline, themeColor, hint, content } from '../../styles/theme.style';
+import { color } from 'react-native-reanimated';
+// Icon
+import RightArrowIcon from '../../assets/icons/SVG/RightArrow.svg';
+
 
 const DateListComponent = (props) => {
   const [list , setList] = useState([]);
-  const [currentYear , setCurrentYear] = useState();
+  const [searchText , setSearchText] = useState();
 
   console.log('list',list);
   const testData = [
     {
       date:'2022/1/5',
-      credName:'雪喬股份有限公司門禁'
+      credName:'Silver Membership',
+      verifier:'Snowbridge Inc.',
+      result:'Success'
     },
     {
       date:'2022/2/28',
-      credName:'雪喬股份有限公司門禁'
+      credName:'Employee ID card',
+      verifier:'Snowbridge Inc.',
+      result:'Fail'
     },    
     {
       date:'2021/12/5',
-      credName:'雪喬股份有限公司門禁'
+      credName:'Employee ID card',
+      verifier:'Snowbridge Inc.',
+      result:'Success'
     },    
     {
       date:'2020/7/5',
-      credName:'雪喬股份有限公司門禁'
+      credName:'Employee ID card',
+      verifier:'Snowbridge Inc.',
+      result:'Fail'
     },
     {
       date:'2021/3/1',
-      credName:'雪喬股份有限公司門禁'
+      credName:'Employee ID card',
+      verifier:'Snowbridge Inc.',
+      result:'Fail'
     },    
     {
       date:'2020/11/19',
-      credName:'雪喬股份有限公司門禁'
+      credName:'Employee ID card',
+      verifier:'Snowbridge Inc.',
+      result:'Success'
     },
   ]
 
@@ -48,6 +65,13 @@ const DateListComponent = (props) => {
     //use for test
     setList(handleDate(testData));
   },[props.data]);
+
+
+  // do search filter
+  useEffect(() => {
+
+    setList(handleDate(testData));
+  },[searchText]);
 
   const getMonthText = (month) => {
     switch(month){
@@ -79,21 +103,26 @@ const DateListComponent = (props) => {
   }
 
   const handleDate = (data) => {
-    const ttt = data.map((item)=>{
+
+    data.sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    })
+    console.log('---data---',data);
+
+    const temp = data.map((item)=>{
       const d = item.date.split('/');
       return {
         credName:item.credName,
         year: d[0],
         month: getMonthText(d[1]),
-        day: d[2]
+        day: d[2],
+        credName:item.credName,
+        verifier:item.verifier,
+        result:item.result
       }
     })
-
-    ttt.sort((a, b) => {
-      return parseInt(b.year) - parseInt(a.year);
-    })
-    console.log('---ttt---',ttt);
-    return ttt;
+    console.log('---temp---',temp);
+    return temp;
   }
 
 
@@ -102,50 +131,46 @@ const DateListComponent = (props) => {
   const onPressItem = (item) => {
     console.log('===slectCredentialData', item);
     props.navigation.navigate({
-      name:props.toPage,
+      name:'HistoryResult',
       params:{
-        from:props.from,
         credData:item
       }
     })
   }
 
   const handleCurrentYear = () => {
-    return '2022';
+    return 'Sep 2022';
   }
 
   const listContent = 
   (
-    <View style={{paddingHorizontal:20}}>
-      <Text style={{fontSize:30}}> {handleCurrentYear()}</Text>
+    <>
+      <Text style={[styles.dateTitle, headline.Headline5]}>Sep 2022</Text>
 
       {
-        list === undefined ? 
-        (
-          null
-        )
-        :
-        (
+        list === undefined ? null : (
           list.map((item, index) => (
             <TouchableOpacity key={index} onPress={()=>{onPressItem(item)}} >      
-              <ListItem topDivider bottomDivider>
+              <ListItem  >
               <View style={styles.dateIcon}>
-                <Text style={styles.day}>{item.day}</Text>
-                <Text style={styles.month}>{item.month}</Text>
+                <Text style={[headline.Headline3, styles.day]}>{item.day}</Text>
+                <Text style={[hint.Default, styles.month]}>{item.month}</Text>
               </View>
                 <ListItem.Content>
-                    <ListItem.Title>
-                    {item.credName}
-                    </ListItem.Title>
+                  <ListItem.Title style={[styles.itemTitle ,headline.Headline4]}>
+                  {item.credName}
+                  </ListItem.Title>
+                  <ListItem.Subtitle style={[styles.itemSubtitle ,content.Small]}>
+                  {item.credName}
+                  </ListItem.Subtitle>
                 </ListItem.Content>
-                <ListItem.Chevron 
-                />
+                <RightArrowIcon></RightArrowIcon>
               </ListItem>
             </TouchableOpacity>      
           ))
         )
       }
-    </View>
+    </>
   )
 
   return listContent;
@@ -157,7 +182,6 @@ const styles = StyleSheet.create({
     flex:1,
   },
   dateIcon:{
-    borderWidth:1,
     borderRadius:10,
     width:50,
     height:50,
@@ -165,7 +189,19 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center'
   },
+  day:{
+    color:themeColor.SemanticHighlight,
 
+  },
+  month:{
+    color:themeColor.SemanticHighlight,
+
+  },
+  dateTitle:{
+    color:themeColor.SemanticHighlight,
+    marginLeft:16,
+    marginBottom:8
+  },
 });
   
 
