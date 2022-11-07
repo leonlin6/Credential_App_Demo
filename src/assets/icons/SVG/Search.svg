@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M22.264 19.435a9.373 9.373 0 1 0-2.828 2.828l4.146 4.148a2 2 0 0 0 2.828-2.829l-4.146-4.147z" fill="#232B3E"/>
+    <path d="M18 13a3 3 0 0 0-3-3" stroke="url(#wyckegaf4a)" stroke-width="3" stroke-linecap="round"/>
+    <defs>
+        <linearGradient id="wyckegaf4a" x1="19.5" y1="14" x2="9.5" y2="6" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#7CFFFF"/>
+            <stop offset="1" stop-color="#82FF96"/>
+        </linearGradient>
+    </defs>
+</svg>

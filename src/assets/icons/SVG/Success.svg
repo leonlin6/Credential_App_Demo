@@ -1,22 +1,10 @@
-<svg width="168" height="168" viewBox="0 0 168 168" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g filter="url(#lz429103wa)">
-        <circle cx="84" cy="84" r="40" fill="url(#38w63r26yb)"/>
-    </g>
-    <path d="M69 85.216 79.179 96 99 75" stroke="#232B3E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="40" cy="40" r="40" fill="url(#ng7xcofrta)"/>
+    <path d="M25 41.216 35.179 52 55 31" stroke="#232B3E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
     <defs>
-        <linearGradient id="38w63r26yb" x1="124" y1="124" x2="-12" y2="-10" gradientUnits="userSpaceOnUse">
+        <linearGradient id="ng7xcofrta" x1="80" y1="80" x2="-56" y2="-54" gradientUnits="userSpaceOnUse">
             <stop stop-color="#82FF96"/>
             <stop offset="1" stop-color="#7CFFFF"/>
         </linearGradient>
-        <filter id="lz429103wa" x="0" y="0" width="168" height="168" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-            <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-            <feOffset/>
-            <feGaussianBlur stdDeviation="22"/>
-            <feComposite in2="hardAlpha" operator="out"/>
-            <feColorMatrix values="0 0 0 0 0.4875 0 0 0 0 1 0 0 0 0 1 0 0 0 0.3 0"/>
-            <feBlend in2="BackgroundImageFix" result="effect1_dropShadow_109_4137"/>
-            <feBlend in="SourceGraphic" in2="effect1_dropShadow_109_4137" result="shape"/>
-        </filter>
     </defs>
 </svg>
