@@ -103,11 +103,11 @@ const LoginScreen = (props) => {
   ,[]);
 
 useEffect(() => {
-  if(props.walletHandle !== null){
-    console.log('props create master secret in');
-    createMasterSecret();
+  // if(props.walletHandle !== null){
+  //   console.log('props create master secret in');
+  //   createMasterSecret();
 
-  }
+  // }
 
 },[props.walletHandle])
 

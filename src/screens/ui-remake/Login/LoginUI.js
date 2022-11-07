@@ -11,7 +11,8 @@ import {
   Keyboard,
   ImageBackground ,
   BackHandler,
-  Alert
+  Alert,
+  Easing
 } from 'react-native';
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,6 +40,7 @@ import { set } from 'react-native-reanimated';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 const LoginUI = (props) => {
+  var spinAnim = useRef(new Animated.Value(0)).current;
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,6 +67,16 @@ const LoginUI = (props) => {
   let prover_link_secret_name = 'link_secret234';
 
   useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinAnim,{
+        duration: 1000,
+        toValue: 1,
+        useNativeDriver: true,
+        easing: Easing.linear,
+      })).start();
+  },[]);
+
+  useEffect(() => {
     currentRefIndex.current = 0;
   },[]);
 
@@ -83,11 +95,11 @@ const LoginUI = (props) => {
   })
 
   useEffect(() => {
-    if(props.walletHandle !== null){
-      console.log('props create master secret in');
-      createMasterSecret();
+    // if(props.walletHandle !== null){
+    //   console.log('props create master secret in');
+    //   createMasterSecret();
 
-    }
+    // }
 
   },[props.walletHandle])
 
@@ -108,6 +120,8 @@ const LoginUI = (props) => {
     try{
       console.log('====openWallet onPress====');
       const result = await indy.openWallet(walletConfig, walletCredentials);
+      console.log('====openwallet type====',typeof result);
+
       WH = result;
       props.setWalletHandle(result);
       console.log('result', result);
@@ -179,7 +193,7 @@ const LoginUI = (props) => {
         console.log('---type---',typeof props.walletHandle);
 
 
-        console.log('---prover_link_secret_name---',prover_link_secret_name);
+        console.log('---prover_link_secret_name',prover_link_secret_name);
         console.log('---type---',typeof prover_link_secret_name);
 
 
@@ -337,11 +351,20 @@ const LoginUI = (props) => {
       </TextInput>
     )
   }
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  })
 
+  // render page
   return (
     isLoading ? (
       <View style={styles.loadingWrap}>
-      <ActivityIndicator size='large'></ActivityIndicator>
+        <Animated.Image 
+          style={[styles.logo, {transform:[{rotate: spin}]}]}
+          source={require('../../../assets/icons/PNG/Loading.png')}
+          resizeMode="stretch"
+        ></Animated.Image>
       <Text style={styles.loadingText}>初始化錢包</Text>
     </View>
     )
@@ -390,11 +413,12 @@ const styles = StyleSheet.create({
     flex:1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor:themeColor.DarkDarkOp8
   },
   loadingText:{
     marginTop:10,
     fontSize:20,
-    color:'black'
+    color:'#A0FCE8'
   },  
   background:{
     flex:1,
@@ -407,8 +431,8 @@ const styles = StyleSheet.create({
     alignItems:'center',
   },
   logo:{
-    height:81,
-    width:81,
+    height:48,
+    width:48,
     marginBottom:12
   },
   title:{
