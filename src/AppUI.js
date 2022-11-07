@@ -34,6 +34,11 @@ import SelectCredential from './screens/ui-remake/Scan/SelectCredential';
 import VerifyCredConfirm from './screens/ui-remake/Scan/VerifyCredConfirm';
 import VerifyResult from './screens/ui-remake/Common/VerifyResult';
 
+// stack - History
+import CredentialHistory from './screens/ui-remake/History/CredentialHistory';
+import VerifierHistory from './screens/ui-remake/History/VerifierHistory';
+import HistoryResult from './screens/ui-remake/History/HistoryResult';
+
 // SVG
 import TabCredentialsIcon from './assets/icons/SVG/TabCredentials.svg';
 import TabCredentialsDisableIcon from './assets/icons/SVG/TabCredentialsDisable.svg';
@@ -212,14 +217,19 @@ const AppUI = (props) => {
           } 
         <Stack.Screen name='CredentialDetail' component={CredentialDetail} options={{headerShown: false}}></Stack.Screen>
         <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
-        <Stack.Screen name='ApplyCredential' component={ApplyCredential} ></Stack.Screen>
+        <Stack.Screen name='ApplyCredential' component={ApplyCredential} options={{headerTitle:'Apply Credential', headerLeft:()=>null}}></Stack.Screen>
         <Stack.Screen name='ApplyCredConfirm' component={ApplyCredConfirm} options={{headerShown: false}}></Stack.Screen>
 
-        <Stack.Screen name='VerifyRule' component={VerifyRule} ></Stack.Screen>
-        <Stack.Screen name='SelectCredential' component={SelectCredential} ></Stack.Screen>
+        <Stack.Screen name='VerifyRule' component={VerifyRule} options={{headerTitle:'Verify Rule', headerLeft:()=>null}}></Stack.Screen>
+        <Stack.Screen name='SelectCredential' component={SelectCredential} options={{headerTitle:'Select Credential'}}></Stack.Screen>
         <Stack.Screen name='VerifyCredConfirm' component={VerifyCredConfirm} options={{headerShown: false}}></Stack.Screen> 
         <Stack.Screen name='VerifyResult' component={VerifyResult} options={{headerShown: false}}></Stack.Screen> 
         
+        
+        <Stack.Screen name='CredentialHistory' component={CredentialHistory} options={{headerTitle:'Credential History'}}></Stack.Screen> 
+        <Stack.Screen name='VerifierHistory' component={VerifierHistory} options={{headerTitle:'Verify History'}}></Stack.Screen> 
+        <Stack.Screen name='HistoryResult' component={HistoryResult} options={{headerShown: false}}></Stack.Screen> 
+
       </Stack.Navigator>                
     </NavigationContainer>
   );
