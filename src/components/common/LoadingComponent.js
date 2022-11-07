@@ -88,7 +88,7 @@ const LoadingComponent = (props) => {
       index:1,
       routes: [
         {
-          name:'DrawerContainer',
+          name:'TabContainer',
           state:{
             routes:[
               { name: 'Certificate' }
@@ -106,7 +106,7 @@ const LoadingComponent = (props) => {
     props.nv.reset({
       index:1,
       routes: [
-        {name:'DrawerContainer'},
+        {name:'TabContainer'},
         {
           name: "CredentialDetail",
           params:{
