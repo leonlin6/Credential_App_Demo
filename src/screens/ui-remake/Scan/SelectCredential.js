@@ -15,41 +15,80 @@ import { ListItem } from '@rneui/themed';
 import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
 
+// API
+import { ENDPOINT_BASE_URL } from '../../../APIs/APIs';
+import axios from 'axios';
+
 const SelectCredential = (props) => {
   const [isSelectRuleShow, setIsSelectRuleShow] = useState(false);
   const [displayType, setDisplayType] = useState('card');
   const [selectedLanguage, setSelectedLanguage] = useState();
-  const [credData, setCredData] = useState([{
-    cred_def_id:'test1111'
-  },
-  {
-    cred_def_id:'test22222'
-  },
-  {
-    cred_def_id:'test3333'
-  },
-  {
-    cred_def_id:'test22222'
-  },
-  {
-    cred_def_id:'test22222'
-  },
-  {
-    cred_def_id:'test22222'
-  },
-]);
+  const [credData, setCredData] = useState([]);
+
+  let credsFromWallet = [];
+
+  useEffect(() => {
+    console.log('===props.route.params===', props.route.params);
+    console.log('proofReq',props.proofReq);
+    console.log('verifyId',props.verifyId);
+
+    const initialCred = async () => {
+      await getCredFromWallet();
+      await getQualifiedCred();
+    }
+
+    initialCred();
+  },[])
 
 
+  const getCredFromWallet = async () => {
+    console.log('---getCredFromWallet---');
 
-
-  const onReScan = () => {
-    props.navigation.goBack();
+    let response = await indy.proverGetCredentials(props.walletHandle);
+    credsFromWallet = response;
   }
 
-  const onNext = () => {
-    props.navigation.navigate('VerifyCredConfirm');
+  const getQualifiedCred = async () => {
+    const configurationObject = {
+      method: 'get',
+      baseURL: ENDPOINT_BASE_URL,
+      url: `api/v1/verify/template/${props.route.params.verifyTemplate}`,
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      }
+    };
 
+    const response = await axios(configurationObject);
+    const templateAttributes = response.data.attributes[0].attributes;
+    console.log('---credsFromWallet---',credsFromWallet);
+    console.log('---templateAttributes---',templateAttributes);
+
+    // check if cred has the attrs which requested by template
+    templateAttributes.forEach((item) => {
+      credsFromWallet.forEach((it) => {
+        if(!it.attrs.hasOwnProperty(item)){
+          it['ruleNotContain'] = true;
+        }
+      })
+    })
+
+    const filteredCreds = credsFromWallet.filter((cred) => {
+      return !cred.hasOwnProperty('ruleNotContain');
+    })
+
+    console.log('filteredCreds-----',filteredCreds);
+    setCredData(filteredCreds);
   }
+
+  // const onReScan = () => {
+  //   props.navigation.goBack();
+  // }
+
+  // const onNext = () => {
+  //   props.navigation.navigate('VerifyCredConfirm');
+
+  // }
 
   // render page
   return (
@@ -62,6 +101,7 @@ const SelectCredential = (props) => {
             navigation={props.navigation} 
             toPage={'VerifyCredConfirm'}
             from={'SelectCredential'}
+            mergedAttribute={props.route.params.mergedAttribute}
           > 
           </CredListComponent>
         </View>
@@ -177,7 +217,10 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {  
   return {
-      walletHandle: state.walletHandle,
+    loginToken:state.loginToken,
+    walletHandle: state.walletHandle,
+    proofReq: state.proofReq,
+    verifyId: state.verifyId
   };
 }
 

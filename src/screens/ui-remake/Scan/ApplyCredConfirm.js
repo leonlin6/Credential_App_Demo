@@ -24,6 +24,9 @@ import { ENDPOINT_BASE_URL } from '../../../APIs/APIs';
 
 const ApplyCredConfirm = (props) => {
   const loadingStatusText = ['正在等待建立憑證', '正在等待憑證發送','已成功將憑證存至錢包中'];
+  const [title, setTitle] = useState('');
+  const [timeStamp, setTimeStamp] = useState('');
+
   let prover_did = 'VsKV7grR1BUE29mG2Fm2kX';
   let prover_link_secret_name = 'link_secret234';
 
@@ -48,9 +51,63 @@ const ApplyCredConfirm = (props) => {
   const [showLoading, setShowLoading] = useState(false);
   const [showInitLoading, setShowInitLoading] = useState(true);
   const [mergedDetailData, setMergedDetailData] = useState();
-
+  //上方卡片圖案用.記得修掉 by Leon 2022.10.31
+  const [credData, setCredData] = useState([{
+    "attrs": {
+      "Age": "12", 
+      "Name": "Leon", 
+      "Sex": "Male", 
+      "TimeStamp": "202211091021", 
+      "Title": "TimeStampTest"
+    }, 
+    "cred_def_id": "E4BDfu4km5x7ni8P8gzbn2:3:CL:187:leontest1109-2", 
+    "cred_rev_id": null, 
+    "referent": "636b0e80b466ea8c3ccb4bf4", 
+    "rev_reg_id": null, 
+    "schema_id": "E4BDfu4km5x7ni8P8gzbn2:2:leontest1109-2:0.0.1"
+  }
+  ]);
 
   useEffect(()=>{
+    console.log('apply confirm props.route.params', props.route.params);
+    const initializeTitle = () => {
+      let titleTemp;
+      let timeStampTemp;
+      props.route.params.onlyDisplayAttributes.forEach((item) => {
+        if(item.key === 'Title'){
+          setTitle(item.value);
+          titleTemp=item.value;
+        }
+      })
+      props.route.params.mergedWriteAttributes.forEach((item) => {
+        if(item.key === 'Title'){
+          setTitle(item.value);
+          titleTemp=item.value;
+        }else if(item.key === 'TimeStamp'){
+          setTimeStamp(item.value);
+          timeStampTemp=item.value;
+console.log(timeStampTemp);
+        }
+
+
+      })
+
+      setCredData([{
+        "attrs": {
+          "Age": "12", 
+          "Name": "Leon", 
+          "Sex": "Male", 
+          "TimeStamp": timeStampTemp.toString(), 
+          "Title": titleTemp
+        }, 
+        "cred_def_id": "E4BDfu4km5x7ni8P8gzbn2:3:CL:187:leontest1109-2", 
+        "cred_rev_id": null, 
+        "referent": "636b0e80b466ea8c3ccb4bf4", 
+        "rev_reg_id": null, 
+        "schema_id": "E4BDfu4km5x7ni8P8gzbn2:2:leontest1109-2:0.0.1"
+      }]);
+    }
+    initializeTitle();
     const loadingTimeout = setTimeout(()=>{
       setShowInitLoading(false);
     },
@@ -191,6 +248,8 @@ const ApplyCredConfirm = (props) => {
       .then((response) => {
         console.log('---download cred---', response.data);
         console.log('---download credential----', response.data.cred_json);
+        console.log('---download credential JSON----', JSON.parse(response.data.cred_json));
+
         INITIAL_STATE.cred_json = response.data.cred_json;
       })
 
@@ -226,12 +285,7 @@ const ApplyCredConfirm = (props) => {
     }
   }
 
-  //上方卡片圖案用.記得修掉 by Leon 2022.10.31
-  const [credData, setCredData] = useState([{
-      key:'test1111',
-      value:'1111'
-    }
-  ]);
+
 
 
   const onCancel = () => {
@@ -317,60 +371,60 @@ const ApplyCredConfirm = (props) => {
         )
         :
         (
-          <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.titleArea}>
-          <Text style={[headline.Headline1, styles.titleText]}>CREDENTIAL READY</Text>
-        </View>
-        <View>
-          <CredListComponent             
-            data={credData} 
-            navigation={props.navigation} 
-            toPage={'CredentialDetail'}
-            from={'CredentialList'}>
-          </CredListComponent>
-        </View>
-      </View> 
-
-      <View style={styles.body}>
-        <ScrollView>
-          <ListItem containerStyle={styles.listItem}>
-            <ListItem.Content>
-              <View style={styles.subtitleView}>
-                <Text style={[content.Default, styles.key]}>Title</Text>
-                <Text style={[content.DefaultBold, styles.value]}>Snowbridge Door License</Text>
+          <ScrollView style={styles.container}>
+            <View style={styles.header}>
+              <View style={styles.titleArea}>
+                <Text style={[headline.Headline1, styles.titleText]}>CREDENTIAL READY</Text>
               </View>
-            </ListItem.Content>
-          </ListItem>
-          <ListItem containerStyle={styles.listItem}>
-            <ListItem.Content>
-              <View style={styles.subtitleView}>
-                <Text style={[content.Default, styles.key]}>Issued By</Text>
-                <Text style={[content.DefaultBold, styles.value]}>Snowbridge Inc.</Text>
+              <View>
+                <CredListComponent             
+                  data={credData} 
+                  navigation={props.navigation} 
+                  toPage={'CredentialDetail'}
+                  from={'CredentialList'}>
+                </CredListComponent>
               </View>
-            </ListItem.Content>
-          </ListItem>
+            </View> 
 
-          <Divider/>
-          <DetailList></DetailList>
-        </ScrollView>
-      </View>  
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.btn} onPress={onCancel}>
-          <Text style={[headline.Headline4, {color:'white'}]}>Cancel</Text>
-        </TouchableOpacity>          
-        <TouchableOpacity style={styles.btn} onPress={onDownload}>
-          <LinearGradient  
-            colors={['rgb(130,255,150)', 'rgb(124,255,255)']} 
-            start= {{x: 0, y: 0}}
-            end= {{ x: 1, y: 1 }}
-            style={styles.btn} 
-          >
-            <Text style={[headline.Headline4, {color:'black'}]}>Download</Text>
-          </LinearGradient>
-        </TouchableOpacity>     
-      </View>
-    </View>
+            <View style={styles.body}>
+              <ScrollView>
+                <ListItem key='title' containerStyle={styles.listItem}>
+                  <ListItem.Content>
+                    <View style={styles.subtitleView}>
+                      <Text style={[content.Default, styles.key]}>Title</Text>
+                      <Text style={[content.DefaultBold, styles.value]}>{title}</Text>
+                    </View>
+                  </ListItem.Content>
+                </ListItem>
+                <ListItem key='issuedby' containerStyle={styles.listItem}>
+                  <ListItem.Content>
+                    <View style={styles.subtitleView}>
+                      <Text style={[content.Default, styles.key]}>Issued By</Text>
+                      <Text style={[content.DefaultBold, styles.value]}>Snowbridge Inc.</Text>
+                    </View>
+                  </ListItem.Content>
+                </ListItem>
+
+                <Divider/>
+                <DetailList></DetailList>
+              </ScrollView>
+            </View>  
+            <View style={styles.footer}>
+              <TouchableOpacity style={styles.btn} onPress={onCancel}>
+                <Text style={[headline.Headline4, {color:'white'}]}>Cancel</Text>
+              </TouchableOpacity>          
+              <TouchableOpacity style={styles.btn} onPress={onDownload}>
+                <LinearGradient  
+                  colors={['rgb(130,255,150)', 'rgb(124,255,255)']} 
+                  start= {{x: 0, y: 0}}
+                  end= {{ x: 1, y: 1 }}
+                  style={styles.btn} 
+                >
+                  <Text style={[headline.Headline4, {color:'black'}]}>Download</Text>
+                </LinearGradient>
+              </TouchableOpacity>     
+            </View>
+          </ScrollView>
         )
       )
     }
@@ -388,6 +442,7 @@ const styles = StyleSheet.create({
   },
   header:{
     justifyContent: "center",
+    flex:1
   },
   titleArea:{
     alignItems:'center',
@@ -399,7 +454,8 @@ const styles = StyleSheet.create({
     color: 'white'
   },
   body:{
-    height: 365,
+    flex:1,
+    
     backgroundColor:'white',
     borderRadius:6,
     padding:16,
@@ -417,6 +473,7 @@ const styles = StyleSheet.create({
     marginTop:32,
     alignItems:'center',
     justifyContent:'center',
+    flex:1
 
   },
 

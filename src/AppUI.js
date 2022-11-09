@@ -77,15 +77,6 @@ const AppUI = (props) => {
 
   const [showHeader, setShowHeader] = useState(false);
 
-  const onPersonalSetting = () => {
-    console.log('teststes');
-  }
-
-  const onPressHistory = () => {
-    console.log('onPressHistory');
-    setShowHeader(true);
-  }
-
 
   const TabContainer = () => {
     const CustomTabBarButton = ({navigation}) => {
@@ -97,7 +88,7 @@ const AppUI = (props) => {
             justifyContent:'center',
             alignItems:'center'
           }}>
-          <LinearGradient colors={['#82ff96','#7cffff']} style={{width:60, height:60, borderRadius:8, justifyContent:'center', alignItems:'center'}}>
+          <LinearGradient colors={['#82ff96','#7cffff']} style={styles.scanIconBackground}>
             <ScannerIcon></ScannerIcon>
           </LinearGradient>
         </TouchableOpacity>
@@ -121,9 +112,13 @@ const AppUI = (props) => {
                 canPreventDefault: true,
               });
     
-            if (!isFocused && !event.defaultPrevented) {
-                // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                navigation.navigate({ name: route.name, merge: true });
+              if (!isFocused && !event.defaultPrevented) {
+                if(route.name === 'Empty'){
+                  navigation.navigate({ name: 'Scan', merge: true });
+                }else{
+                  // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                  navigation.navigate({ name: route.name, merge: true });
+                }
               }
             };
     
@@ -164,7 +159,6 @@ const AppUI = (props) => {
       <Tab.Navigator 
         initialRouteName="CredentialList"
         tabBar={props => <TabBar {...props} />}
-
         screenOptions={({ route }) => ({
           headerShown:showHeader,
           defaultStatus:"open",
@@ -196,25 +190,19 @@ const AppUI = (props) => {
     <NavigationContainer>  
       <Stack.Navigator
         screenOptions={{ 
-          headerStyle: { 
-          }, 
-          headerTitleStyle: [{ 
-            color:'black',
-            
-          }, headline.Headline3],
+          headerStyle: {}, 
+          headerTitleStyle: [{color:'black'}, headline.Headline3],
           headerTitleAlign: 'center',
           headerBackImage: ()=>( 
             <LeftArrowGreenIcon></LeftArrowGreenIcon>
            ),
         }}
       >
-
-        {/* <Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen> */}
-          {props.loginToken !== null ? 
-            (<Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>)
-            : 
-            (<Stack.Screen name='RootStackUI' component={RootStackUI} options={{headerShown: false}}></Stack.Screen>)
-          } 
+        {props.loginToken !== null ? 
+          (<Stack.Screen name='TabContainer' component={TabContainer} options={{headerShown: false}}></Stack.Screen>)
+          : 
+          (<Stack.Screen name='RootStackUI' component={RootStackUI} options={{headerShown: false}}></Stack.Screen>)
+        } 
         <Stack.Screen name='CredentialDetail' component={CredentialDetail} options={{headerShown: false}}></Stack.Screen>
         <Stack.Screen name='Scan' component={Scan} options={{headerShown: false}}></Stack.Screen>
         <Stack.Screen name='ApplyCredential' component={ApplyCredential} options={{headerTitle:'Apply Credential', headerLeft:()=>null}}></Stack.Screen>
@@ -225,11 +213,9 @@ const AppUI = (props) => {
         <Stack.Screen name='VerifyCredConfirm' component={VerifyCredConfirm} options={{headerShown: false}}></Stack.Screen> 
         <Stack.Screen name='VerifyResult' component={VerifyResult} options={{headerShown: false}}></Stack.Screen> 
         
-        
         <Stack.Screen name='CredentialHistory' component={CredentialHistory} options={{headerTitle:'Credential History'}}></Stack.Screen> 
         <Stack.Screen name='VerifierHistory' component={VerifierHistory} options={{headerTitle:'Verify History'}}></Stack.Screen> 
         <Stack.Screen name='HistoryResult' component={HistoryResult} options={{headerShown: false}}></Stack.Screen> 
-
       </Stack.Navigator>                
     </NavigationContainer>
   );
@@ -267,7 +253,13 @@ const styles = StyleSheet.create({
     fontFamily:'RedHatDisplay-Bold',
     fontSize:12,
   },
-
+  scanIconBackground:{
+    width:60, 
+    height:60, 
+    borderRadius:8, 
+    justifyContent:'center', 
+    alignItems:'center'
+  },
   headerTitle:{
     fontSize:25, 
     fontWeight:'bold'

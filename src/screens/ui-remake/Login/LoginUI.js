@@ -347,6 +347,7 @@ const LoginUI = (props) => {
         cursorColor='rgb(246,247,247)'
         selectTextOnFocus={true}
         onKeyPress={(e)=>{handleKeyDown(e)}}
+        secureTextEntry={true}
       >
       </TextInput>
     )
@@ -379,7 +380,7 @@ const LoginUI = (props) => {
         <View style={styles.body}>
           <View style={styles.loginArea}>
             <View style={styles.hintArea}>
-              <Text style={[hint.Default, styles.hint]}>Login as whangwang0430@gmail.com</Text>
+              <Text style={[hint.Default, styles.hint]}>Login as admin@snowbridge.tw</Text>
             </View>
             <View style={styles.pincodeArea}>
               <Text style={[headline.Headline4, styles.pincodeTitle]}>PIN Code</Text>

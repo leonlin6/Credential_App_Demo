@@ -1,9 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { headline } from '../../../styles/theme.style';
-import HistoryWhiteIcon from '../../../assets/icons/SVG/HistoryWhite.svg';
-import SettingWhiteIcon from '../../../assets/icons/SVG/SettingWhite.svg';
-
 import { 
   View, 
   StyleSheet, 
@@ -11,47 +6,87 @@ import {
   Text,
   ImageBackground
 } from 'react-native';
-import CredListComponent from '../../../components/common/CredListComponent';
-import {connect} from 'react-redux';
 import indy from 'indy-sdk-react-native';
-import { themeSpacing } from '@rneui/themed/dist/config/ThemeProvider';
+import { useFocusEffect } from '@react-navigation/native';
+
+import { headline } from '../../../styles/theme.style';
+
+//icon
+import HistoryWhiteIcon from '../../../assets/icons/SVG/HistoryWhite.svg';
+import SettingWhiteIcon from '../../../assets/icons/SVG/SettingWhite.svg';
+
+//components
+import CredListComponent from '../../../components/common/CredListComponent';
+
+//redux
+import {connect} from 'react-redux';
+
 
 const CredentialList = (props) => {
-  const [displayType, setDisplayType] = useState('card');
-  const [displayTypeIcon, setDisplayTypeIcon] = useState('reader');
   const [credData, setCredData] = useState([]);
+  const defaultData =    [{
+    "attrs":
+    {
+        "地址": "新北市汐止區東勢街",
+        "所得終止時間": "20211231",
+        "所得總額": "500000",
+        "所得起始時間": "20210101",
+        "扶養人親屬": "無",
+        "扶養人身分證統一編號": "無",
+        "本人身分證統一編號": "L1234567890",
+        "核發單位": "北區國稅局",
+        "納稅總額": "30000",
+        "納稅義務人": "周頌鈞",
+        "編號": "100000001",
+        "配偶姓名": "張 OO",
+        "配偶身分證統一編號": "A1234567890"
+    },
+    "cred_def_id": "E4BDfu4km5x7ni8P8gzbn2:3:CL:12:tax-cert-test01",
+    "cred_rev_id": null,
+    "referent": "635fa0a15a0fbaac8eb64923",
+    "rev_reg_id": null,
+    "schema_id": ""
+  }]
 
-  useEffect(() => {
-    const getCredFromWallet = async () => {
-      console.log('====getCredFromWallet====');
-      console.log('---props.walletHandle---',props.walletHandle);
+  // useEffect(() => {
+  //   const getCredFromWallet = async () => {
+  //     const response = await indy.proverGetCredentials(props.walletHandle);
+  //     setCredData(response);
+  //   }
 
-      //不是第一次執行再去取wallet中的cred
-      if(!props.isFirstLogin){
-        console.log('----setCredData----' , response);
-        console.log('====not FirstLogin====' , props.isFirstLogin);
- 
+  //   getCredFromWallet();
+
+  // },[])
+
+
+  //when screen blur, clear the interval
+  useFocusEffect(
+    
+    React.useCallback(() => {
+      const getCredFromWallet = async () => {
         const response = await indy.proverGetCredentials(props.walletHandle);
+        console.log('getCredFromWallet',response);
         setCredData(response);
-      }else{
-        console.log('====is first login====' , props.isFirstLogin);
-        setCredData([]);
       }
+      getCredFromWallet();
 
+      console.log('Screen was focused');
 
-    }
-    console.log('props.isFirstLogin======',props.isFirstLogin);
+      return () => {
 
+        console.log('Screen was unfocused');
 
-    getCredFromWallet();
+      };
+    }, [])
+  );
 
-  },[])
 
   const onSetting = () => {
 
   }
+  
   const onHistory = () => {
-
+    props.navigation.navigate('CredentialHistory');
   }
 
   // render page
@@ -75,18 +110,21 @@ const CredentialList = (props) => {
             </TouchableOpacity>            
           </View>
         </View>
-        <View style={styles.listArea}>
-          <CredListComponent 
-            data={credData} 
-            displayType={displayType} 
-            navigation={props.navigation} 
-            toPage={'CredentialDetail'}
-            from={'CredentialList'}
-          > 
-          </CredListComponent>
-        </View>
+          <View style={styles.listArea}>
+            <CredListComponent 
+              data={credData} 
+              displayType={'card' }
+              navigation={props.navigation} 
+              toPage={'CredentialDetail'}
+              from={'CredentialList'}
+            > 
+            </CredListComponent>
+          </View>
+        <View style={styles.bottomSpace}></View>
+
       </ImageBackground>
     </View>
+   
   );
 }
 
@@ -159,9 +197,10 @@ const styles = StyleSheet.create({
   },
   credentialName:{
     color:'white',
+  },
+  bottomSpace:{
+    height:90
   }
-  
-
 });
 
 const mapStateToProps = (state) => {  

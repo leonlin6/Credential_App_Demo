@@ -205,14 +205,14 @@ const ServerStatusLoadingComponent = (props) => {
 
     if(toPage === 'VerifyCredential'){
       navigateToVerifyResult();
-    } else if(toPage === 'Wallet'){
-      navigateToWallet();
+    } else if(toPage === 'CredentialList'){
+      navigateToCredentialList();
     }else if(toPage === 'CredentialDetail'){
       navigateToCredentailDetail();
     }else if(toPage === 'VerifyResult'){
       navigateToVerifyResult();
     }else{
-      navigateToWallet();
+      navigateToCredentialList();
     }
   }
 
@@ -252,16 +252,16 @@ const ServerStatusLoadingComponent = (props) => {
     });
   }
 
-  const navigateToWallet = (data) => {
+  const navigateToCredentialList = (data) => {
     clearTimeout(timeoutLoadingStatusID);
     props.nv.reset({
       index:1,
       routes: [
         {
-          name:'DrawerContainer',
+          name:'TabContainer',
           state:{
             routes:[
-              {  name: 'Wallet' }
+              {  name: 'CredentialList' }
             ]
           }
         },

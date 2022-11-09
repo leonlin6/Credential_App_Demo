@@ -28,11 +28,13 @@ import {setProofReq, setVerifyId} from '../../../actions/index'
 //API
 import { ENDPOINT_BASE_URL } from '../../../APIs/APIs';
 import axios from 'axios';
+import AnimLoadingComponent from '../../../components/common/AnimLoadingComponent';
 
 // window dimension
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const QR_SCAN_SQUARE_SIZE = 300;
+const devicewidth=Dimensions.get("window").width;
 
 const ScanScreen = (props) => {
   let credentialInfo;
@@ -47,35 +49,32 @@ const ScanScreen = (props) => {
   const [QRCode, setQRCode] = useState('nothing QR now');
   const [isGetCredential, setIsGetCredential] = useState(true);
   const [isShowLoading, setIsShowLoading] = useState(false);
+  const [isShowErrorMessage, setIsShowErrorMessage] = useState(false);
   const [isUserWriteExist, setIsUserWriteExist] = useState(true);
 
   useEffect(()=>{
-    setIsShowLoading(false);
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      setIsShowLoading(false);
+
+    });
+
+    return unsubscribe;
   },[])
   
+  const getVerifyUrl = (url)=> {
+    if(url.includes("https://cred-api.snowbridge.tw/api/v1/qrcode/")){
+      return true;
+    }else{
+      return false;
+    }
+  }
   const onSuccessLoad = async (e) => {
     console.log('---e---',e);
-    await getCredentialInfo(e.data);
-
-    // use for test
-    if(isGetCredential){
-      // props.navigation.navigate({
-      //   name:'Form',
-      //   params:{
-      //     from:'GetCredential',
-      //     credentialInfo:credentialInfo,
-      //     cred_offer_json:cred_offer_json,
-      //     cred_id:cred_id,
-      //     cred_def_id:cred_def_id,
-      //   }
-      // });
+    if(getVerifyUrl(e.data)){
+      setIsShowLoading(true);
+      await getCredentialInfo(e.data);
     }else{
-      // props.navigation.navigate({
-      //   name:'SelectCredential',
-      //   params:{
-      //     from:'CertificateCredential'
-      //   }
-      // });
+      setIsShowErrorMessage(true);
     }
   }
 
@@ -126,11 +125,10 @@ const ScanScreen = (props) => {
           props.setProofReq(JSON.parse(credentialInfo.verify.proof_req_json));
           props.setVerifyId(credentialInfo.verify._id);
 
-
+          console.log('credentialInfo.verify.verifyTemplate----',credentialInfo.verify.verifyTemplate);
           props.navigation.navigate({
-            name:'SelectCredential',
+            name:'VerifyRule',
             params:{
-              from:'CertificateCredential',
               verifyTemplate : credentialInfo.verify.verifyTemplate,
             }
           });
@@ -142,60 +140,8 @@ const ScanScreen = (props) => {
     }
   };
 
-
-  const backButton = async () => {
-    props.navigation.goBack();
-
-
-    // // 若有要讓user自填的definition attribute才進form
-    // if(isUserWriteExist){
-    //   props.navigation.navigate({
-    //     name:'Form',
-    //     params:{
-    //       credentialInfo:credentialInfo,
-    //       cred_offer_json:cred_offer_json,
-    //       cred_id:cred_id,
-    //       cred_def_id:cred_def_id,
-    //     }
-    //   });
-    // }else{
-    //   props.navigation.navigate({
-    //     name:'GetCredentialCheck',
-    //     params:{
-    //       '電子信箱': mailValue,
-    //       '電話號碼': phoneValue
-    //     }
-    //   });
-    // }
-
-
-    // use for test
-    // if(isGetCredential){
-    //   await getCredentialInfo();
-    //   props.navigation.navigate({
-    //     name:'Form',
-    //     params:{
-    //       from:'GetCredential',
-    //       credentialInfo:credentialInfo,
-    //       cred_offer_json:cred_offer_json,
-    //       cred_id:cred_id,
-    //       cred_def_id:cred_def_id,
-    //     }
-    //   });
-    // }else{
-    //   props.navigation.navigate({
-    //     name:'SelectCredential',
-    //     params:{
-    //       from:'CertificateCredential',
-    //       verify_id: verify_id
-    //     }
-    //   });
-    // }
-  }
-
   const onClose = () => {
-    props.navigation.navigate('ApplyCredential');
-    // props.navigation.goBack();
+    props.navigation.goBack();
   }
 
     // only for test
@@ -203,14 +149,13 @@ const ScanScreen = (props) => {
     props.navigation.navigate('VerifyRule');
   }
 
-  let devicewidth=Dimensions.get("window").width
   return (
     <View style={{flex:1}}>
     {
       isShowLoading ? 
       (
-        <View style={styles.container}>
-          <ActivityIndicator size="large" />
+        <View style={styles.loadingContainer}>
+          <AnimLoadingComponent></AnimLoadingComponent>
         </View>      
       )
       :
@@ -247,22 +192,21 @@ const ScanScreen = (props) => {
               backgroundColor:'red'
             }}
           />
-          <TouchableOpacity onPress={()=>{onClose()}}>
-            <View style={styles.errorMessage}>
-              <Alert></Alert>
-              <Text style={[content.DefaultBold, {color:'#FFFFFF'}]}>Invalid. Please rescan</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={{position:'absolute', top: 10, left: 10 ,borderRadius:100}} onPress={()=>{onClose()}}>
+          {
+            isShowErrorMessage ? (
+              <View style={styles.errorMessage}>
+                <Alert></Alert>
+                <Text style={[content.DefaultBold, {color:'#FFFFFF'}]}>Invalid. Please rescan</Text>
+              </View>
+            )
+            : null
+          }
+
+
+          <TouchableOpacity style={{position:'absolute', top: 10, left: 10 ,borderRadius:100}} onPress={onClose}>
             <View style={styles.closeBtn}>
               <Ionicons name='close' size={20} color='#82ff96' />
-              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Apply Cred</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={{position:'absolute', top: 70, left: 40 ,borderRadius:100}} onPress={()=>{onVerify()}}>
-            <View style={styles.closeBtn}>
-              <Ionicons name='close' size={20} color='#82ff96' />
-              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Verify Cred</Text>
+              <Text style={[headline.Headline3, {color:'#82ff96'}]}>Close</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -276,9 +220,11 @@ const ScanScreen = (props) => {
 const styles = StyleSheet.create({
   body:{
   },
-  container:{
+  loadingContainer:{
     flex:1,
-
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor:themeColor.DarkDarkOp8
   },
   titleArea:{
     paddingTop:75,

@@ -9,76 +9,112 @@ import {
   ScrollView,
   TextInput
 } from 'react-native';
-import CredListComponent from '../../../components/common/CredListComponent';
 import LinearGradient from 'react-native-linear-gradient';
 import { ListItem } from '@rneui/themed';
 import {connect} from 'react-redux';
+//api
+import { ENDPOINT_BASE_URL } from '../../../APIs/APIs';
+import axios from 'axios';
 import indy from 'indy-sdk-react-native';
 
+
 const VerifyRule = (props) => {
-  const [isSelectRuleShow, setIsSelectRuleShow] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState();
-  const [attributesData, setAttributesData] = useState([{
-    key:'Age',
-    value:'20'
-  },
-  {
-    key:'Gender',
-    value:'MALE'
-  },
-  {
-    key:'ID',
-    value:'A123456789'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
+  let tempList = {};
+
+  const [attributesData, setAttributesData] = useState([]);
+  const [ruleName, setRuleName] = useState('');
+
+  useEffect(() => {
+    initializeRuleDetail();
+  },[]);
+
+  //處理條件
+  const handlePredicates = (predicates) => {
+    const pred = predicates.map((item) => {
+      return item;
+    })
+    tempList['predicates'] = pred;
   }
-]);
+  
+  //處理attribute內容
+  const handleAttributes = (attributes) => {
+    const attr = attributes.map((item)=>{
+      return item;
+    })
+    tempList['attributes'] = attr;
+  }
+
+  const mergeAttribute = () => {
+    let hashTemp = {};
+    tempList.predicates.forEach((item) => {
+      hashTemp[item.name] = item;
+    })
+
+    const mergedAttribute = tempList.attributes.map((it) => {
+      if(hashTemp.hasOwnProperty(it))
+        return {
+          ...hashTemp[it],
+          hasPredicate: true
+        };
+      else{
+        return {
+          name:it,
+          hasPredicate: false
+        }
+      }
+    })
+
+    tempList.predicates.forEach((item) => {
+      mergedAttribute.push({
+        ...item,
+        hasPredicate: true
+      })
+    })
+    tempList['mergedAttribute'] = mergedAttribute;
+  }
 
 
+  const initializeRuleDetail = async () => {
+    const configurationObject = {
+      method: 'get',
+      baseURL: ENDPOINT_BASE_URL,
+      url: `api/v1/verify/template/${props.route.params.verifyTemplate}`,
+      headers:{
+        'authorization':`Bearer ${props.loginToken}`,
+        'Content-Type':'application/json'
+      }
+    };
+
+    const response = await axios(configurationObject);
+
+    console.log('---response.data----',response.data);
+
+    tempList['ruleName'] = response.data.name;
+    handleAttributes(response.data.attributes[0].attributes);
+    handlePredicates(response.data.predicates);
+    mergeAttribute();
+    console.log('---tempList----', tempList);
+
+    setAttributesData(tempList.mergedAttribute);
+    setRuleName(tempList.ruleName);
+    
+  }
   const onReScan = () => {
     props.navigation.goBack();
   }
 
   const onNext = () => {
-    props.navigation.navigate('SelectCredential');
+    props.navigation.navigate({
+      name:'SelectCredential',
+      params:{
+        verifyTemplate : props.route.params.verifyTemplate,
+        mergedAttribute: attributesData
+      }
+    });
 
   }
   const DetailList = () => {
-    const mergedList = attributesData.map((item) => {
+    const mergedList = attributesData.map((item, index) => {
       return(
         <ListItem 
           containerStyle={styles.listItem}
@@ -88,11 +124,20 @@ const VerifyRule = (props) => {
             end: { x: 1, y: 1 },
           }}
           ViewComponent={LinearGradient}
+          key={index}
         >
           <ListItem.Content>
             <View style={styles.subtitleView}>
-              <Text style={[content.Default, styles.key]}>{item.key}</Text>
-              <Text style={[content.DefaultBold, styles.value]}>{item.value}</Text>
+              <Text style={[content.Default, styles.key]}>{item.name}</Text>
+              {
+                item.hasPredicate ? (
+                  <Text style={[content.DefaultBold, styles.value]}>{item.type}{item.value}</Text>
+                )
+                :
+                (
+                  <Text style={[content.DefaultBold, styles.value]}>Any</Text>
+                )
+              }
             </View>
           </ListItem.Content>
         </ListItem>
@@ -115,7 +160,7 @@ const VerifyRule = (props) => {
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <View style={{flex: 1, height: 1, backgroundColor: 'black'}} />
           <View>
-            <Text style={[headline.Headline5, {width: 200, textAlign: 'center', color:themeColor.Dark60 }]}>Attributes to be verified</Text>
+            <Text style={[headline.Headline5, {width: 200, textAlign: 'center', color:themeColor.DarkDark60 }]}>Attributes to be verified</Text>
           </View>
           <View style={{flex: 1, height: 1, backgroundColor: 'black'}} />
         </View>
@@ -132,26 +177,17 @@ const VerifyRule = (props) => {
             <ListItem.Content>
               <View style={styles.subtitleView}>
                 <Text style={[content.Default, styles.key]}>Rule Name</Text>
-                <Text style={[content.DefaultBold, styles.value]}>Snowbridge Door License</Text>
+                <Text style={[content.DefaultBold, styles.value]}>{ruleName}</Text>
               </View>
             </ListItem.Content>
           </ListItem>
-          <ListItem containerStyle={styles.listItem}>
-            <ListItem.Content>
-              <View style={styles.subtitleView}>
-                <Text style={[content.Default, styles.key]}>Verified By</Text>
-                <Text style={[content.DefaultBold, styles.value]}>Snowbridge Inc.</Text>
-              </View>
-            </ListItem.Content>
-          </ListItem>
-
           <Divider/>
           <DetailList></DetailList>
         </ScrollView>
       </View>
       <View style={styles.footer}>
         <TouchableOpacity style={styles.btn} onPress={onReScan}>
-            <Text style={[headline.Headline4, {color:themeColor.SemanticHighlight}]}>Re-Scan</Text>
+          <Text style={[headline.Headline4, {color:themeColor.SemanticHighlight}]}>Re-Scan</Text>
         </TouchableOpacity>          
         <TouchableOpacity style={styles.btn} onPress={onNext}>
           <LinearGradient  
@@ -256,7 +292,8 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => {  
   return {
-      walletHandle: state.walletHandle,
+    loginToken: state.loginToken,
+
   };
 }
 

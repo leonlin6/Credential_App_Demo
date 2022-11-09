@@ -52,9 +52,12 @@ const ApplyCredential = (props) => {
   },[])
 
   const handleInputChange = (text, item, index) => {
+    console.log('change input text');
+
     let arr = [...writeAttributes];
-    arr[index].value = text
-    setMergedWriteAttributes(arr);
+    arr[index].value = text;
+    console.log('====arr====',arr);
+    // setMergedWriteAttributes(arr);
   };
 
   const FormList = () => {
@@ -64,13 +67,13 @@ const ApplyCredential = (props) => {
         if(item.user_write === true){
           return(
 
-            <ListItem containerStyle={styles.listItem} >
+            <ListItem key={`formInput${index}`} containerStyle={styles.listItem} >
               <ListItem.Content>
                 <View style={styles.subtitleView}>
                   <Text style={[headline.Headline4, {color:themeColor.DarkDark}]}>{item.key}</Text>
                 </View>           
                 <View style={styles.contenView}>
-                  <TextInput onChangeText={(text)=>{handleInputChange(text, item, index)}} style={styles.input}></TextInput>
+                  <TextInput value={mergedWriteAttributes[item.key]} onChangeText={(text)=>{handleInputChange(text, item, index)}} style={styles.input}></TextInput>
                 </View>
               </ListItem.Content>
             </ListItem>
@@ -91,10 +94,27 @@ const ApplyCredential = (props) => {
   }
 
   const onNext = () => {
+    console.log('===mergedWriteAttributes===',mergedWriteAttributes);
+    console.log('===onlyDisplayAttributes===',onlyDisplayAttributes);
+    console.log('===writeAttributes===',writeAttributes);
+
+    // 暫時為了處理輸入type===1時，要為int type送出，緊急修改。 記得改 20221108 by Leon
+    const tempAttributes = writeAttributes.map((item)=>{
+      if(item.type === 1){
+        return {
+          ...item,
+          value: parseInt(item.value)
+        }
+      }else{
+        return item
+      }
+    })
+
+    console.log('tempAttributes=======',tempAttributes);
     props.navigation.navigate({
       name:'ApplyCredConfirm',
       params:{
-        mergedWriteAttributes: mergedWriteAttributes,
+        mergedWriteAttributes: tempAttributes,
         onlyDisplayAttributes:onlyDisplayAttributes,
         credentialInfo: props.route.params.credentialInfo,
         cred_offer_json: props.route.params.cred_offer_json,
@@ -117,9 +137,9 @@ const ApplyCredential = (props) => {
             end= {{ x: 1, y: 1 }}
             style={styles.infoArea}
           >
-            <Text style={[content.Small, {color:themeColor.DarkDark60}]}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text>
+            <Text style={[content.Small, {color:themeColor.DarkDark60}]}>Please enter the required data for applying your credential.</Text>
           </LinearGradient>
-          <ListItem containerStyle={styles.listItem} >
+          <ListItem key='title' containerStyle={styles.listItem} >
             <ListItem.Content>
               <View style={styles.subtitleView}>
                 <Text style={[headline.Headline4, {color:themeColor.DarkDark}]}>Title</Text>
@@ -129,7 +149,7 @@ const ApplyCredential = (props) => {
               </View>
             </ListItem.Content>
           </ListItem>
-          <ListItem containerStyle={styles.listItem} >
+          <ListItem key='Issued By'  containerStyle={styles.listItem} >
             <ListItem.Content>
               <View style={styles.subtitleView}>
                 <Text style={[headline.Headline4, {color:themeColor.DarkDark}]}>Issued By</Text>
@@ -144,7 +164,7 @@ const ApplyCredential = (props) => {
       </View>
       <View style={styles.footer}>
         <TouchableOpacity style={styles.btn} onPress={onReScan}>
-            <Text style={[headline.Headline4, {color:themeColor.SemanticHighlight}]}>Re-Scan</Text>
+          <Text style={[headline.Headline4, {color:themeColor.SemanticHighlight}]}>Re-Scan</Text>
         </TouchableOpacity>          
         <TouchableOpacity style={styles.btn} onPress={onNext}>
           <LinearGradient  

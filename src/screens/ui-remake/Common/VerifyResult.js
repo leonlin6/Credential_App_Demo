@@ -23,91 +23,72 @@ import Error from '../../../assets/icons/SVG/Error.svg';
 
 const VerifyResult = (props) => {
   const [result, setResult] = useState(false);
-  const [attributesData, setAttributesData] = useState([{
-    key:'Age',
-    value:'20'
-  },
-  {
-    key:'Gender',
-    value:'MALE'
-  },
-  {
-    key:'ID',
-    value:'A123456789'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  },
-  {
-    key:'test1111',
-    value:'1111'
-  }
-]);
+  const [attributesData, setAttributesData] = useState([]);
 
 
   const onBack = () => {
-    // props.navigation.goBack();
-    setResult(!result);
+    props.navigation.reset({
+      index:0,
+      routes: [
+        {
+          name:'TabContainer',
+          state:{
+            routes:[
+              {
+                name: 'Verify'
+              }
+            ]
+          }
+        },
+      ]
+    });
   }
 
 
   const DetailList = () => {
-    const mergedList = attributesData.map((item) => {
-      return(
-        <ListItem 
-          containerStyle={styles.listItem}
-          linearGradientProps={{
-            colors: ['rgba(124,255,255,0.1)', 'rgba(124,255,255,0.2)'],
-            start: { x: 0, y: 1 },
-            end: { x: 1, y: 1 },
-          }}
-          ViewComponent={LinearGradient}
-        >
-          <ListItem.Content>
-            <View style={styles.subtitleView}>
-              <Text style={[content.Default, styles.key]}>{item.key}</Text>
-              <Text style={[content.DefaultBold, styles.value]}>{item.value}</Text>
-            </View>
-          </ListItem.Content>
-        </ListItem>
-      )
+    const revealed_attr_groups = props.route.params.verifyResultData.revealed_attr_groups;
+    console.log('---revealed_attr_groups---',revealed_attr_groups);
+    const ruleList = Object.keys(revealed_attr_groups).map((item, index) => {
+      console.log('---policyValue item----', item)
+      if(typeof item !== 'undefined'){
+
+        const policyValue = revealed_attr_groups[item].values;
+
+        const tempList = Object.keys(policyValue).map((ruleKey, ruleIndex) => {
+          return (
+            <ListItem 
+              containerStyle={styles.listItem}
+              linearGradientProps={{
+                colors: ['rgba(124,255,255,0.1)', 'rgba(124,255,255,0.2)'],
+                start: { x: 0, y: 1 },
+                end: { x: 1, y: 1 },
+              }}
+              ViewComponent={LinearGradient}
+            >
+              <ListItem.Content>
+                <View style={styles.subtitleView}>
+                  <Text style={[content.Default, styles.key]}>{ruleKey}</Text>
+                <Text style={[content.DefaultBold, styles.value]}>{policyValue[ruleKey].raw}</Text>
+                </View>
+              </ListItem.Content>
+            </ListItem>
+          )
+        })
+ 
+        return tempList;
+      }else{
+        return null;
+      }
+
     })
+
     return (
       <LinearGradient  
         colors={['rgba(124,255,255,0.1)', 'rgba(124,255,255,0.2)']} 
         start= {{x: 0, y: 1}}
         end= {{ x: 1, y: 1 }}
         style={styles.detailListArea}>
-      {mergedList}
+      {ruleList}
       </LinearGradient>
     );
   }
@@ -242,7 +223,7 @@ const VerifyResult = (props) => {
   }
 
   // render page
-    if(result){
+    if(props.route.params.verifyResultData.verifyResult){
       return <SuccessResult></SuccessResult>;
     }else{
       return <FailResult></FailResult>;

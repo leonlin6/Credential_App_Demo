@@ -21,11 +21,23 @@ import LinearGradient from 'react-native-linear-gradient';
 const CredentialDetail = (props) => {
   const [list, setList] = useState();
   const [showLoading, setShowLoading] = useState(true);
+  const [title, setTitle] = useState('');
+  const [issuedDate, setIssuedDate] = useState('');
 
-  const [credData, setCredData] = useState([{
-      key:'test1111',
-      value:'1111'
-    }
+  const [cardData, setCardData] = useState([{
+    "attrs": {
+      "Age": "12", 
+      "Name": "Leon", 
+      "Sex": "Male", 
+      "TimeStamp": "202211091021", 
+      "Title": "TimeStampTest"
+    }, 
+    "cred_def_id": "E4BDfu4km5x7ni8P8gzbn2:3:CL:187:leontest1109-2", 
+    "cred_rev_id": null, 
+    "referent": "636b0e80b466ea8c3ccb4bf4", 
+    "rev_reg_id": null, 
+    "schema_id": "E4BDfu4km5x7ni8P8gzbn2:2:leontest1109-2:0.0.1"
+  }
   ]);
   
   useEffect(() => {
@@ -33,6 +45,9 @@ const CredentialDetail = (props) => {
 
     if (props.route.params.from === 'CredentialList'){
       console.log('----props.route.params.credData----',props.route.params.credData);
+      setTitle(props.route.params.credData.attrs.Title);
+      setIssuedDate(getParsedTimeStamp(props.route.params.credData.attrs.TimeStamp) );
+
       handleCredData(props.route.params.credData);
     } else if (props.route.params.from === 'GetCredential'){
       handleGetCredData(props.route.params.mergedDetailData);
@@ -43,7 +58,17 @@ const CredentialDetail = (props) => {
     }, 500);
   }, []);
 
+  const getParsedTimeStamp = (text) => {
+    const year = text.slice(0,4);
+    const month = text.slice(4,6);
+    const day = text.slice(6,8);
+    const hour = text.slice(8,10);
+    let minute = text.slice(10,12);
 
+
+    return `${year}/${month}/${day}  ${hour}:${minute}`;
+  }
+ 
   //處理Get Cred處理過後的array cred資料
   const handleGetCredData = (data) => {
     const temp = data.map((item) => {
@@ -136,7 +161,7 @@ const CredentialDetail = (props) => {
       <ImageBackground source={require('../../../assets/background/BG1.png')} resizeMode="cover" style={styles.backgroundImage}>
         <View style={styles.header}>
           <CredListComponent             
-            data={credData} 
+            data={cardData} 
             navigation={props.navigation} 
             toPage={'CredentialDetail'}
             from={'CredentialList'}>
@@ -148,7 +173,7 @@ const CredentialDetail = (props) => {
               <ListItem.Content>
                 <View style={styles.subtitleView}>
                   <Text style={[content.Default, styles.key]}>Title</Text>
-                  <Text style={[content.DefaultBold, styles.value]}>Snowbridge Door License</Text>
+                  <Text style={[content.DefaultBold, styles.value]}>{title}</Text>
                 </View>
               </ListItem.Content>
             </ListItem>
@@ -156,7 +181,7 @@ const CredentialDetail = (props) => {
               <ListItem.Content>
                 <View style={styles.subtitleView}>
                   <Text style={[content.Default, styles.key]}>Issued Date</Text>
-                  <Text style={[content.DefaultBold, styles.value]}>2022/06/06 16:04:46</Text>
+                  <Text style={[content.DefaultBold, styles.value]}>{issuedDate}</Text>
                 </View>
               </ListItem.Content>
             </ListItem>
@@ -170,10 +195,10 @@ const CredentialDetail = (props) => {
             </ListItem>
             <ListItem containerStyle={styles.listItem}>
               <ListItem.Content>
-                <TouchableOpacity style={styles.subtitleViewBtn} onPress={()=>{onVerifyHistory()}}>
+                {/* <TouchableOpacity style={styles.subtitleViewBtn} onPress={()=>{onVerifyHistory()}}>
                   <Text style={[headline.Headline4, styles.listItemBtn]}>Verify History</Text>
                   <Ionicons name='chevron-forward' size={24} color='rgb(45,128,147)' />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </ListItem.Content>
             </ListItem>
             <Divider/>

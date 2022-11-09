@@ -5,17 +5,35 @@ import {
   ScrollView, 
   StyleSheet, 
   TouchableOpacity,
-  ImageBackground
+  ImageBackground,
+  Image
 } from 'react-native';
 import { ListItem } from '@rneui/themed'
 import { headline } from '../../styles/theme.style';
 
 const CredListComponent = (props) => {
   const [list , setList] = useState([]);
+  const titleIcon = [
+    require('../../assets/icons/JPG/CardLogo01.jpg'),
+    require('../../assets/icons/JPG/CardLogo02.jpg'),
+    require('../../assets/icons/JPG/CardLogo03.jpg'),
+    require('../../assets/icons/JPG/CardLogo04.jpg'),
+    require('../../assets/icons/JPG/CardLogo05.jpg'),
+    require('../../assets/icons/JPG/CardLogo06.jpg'),
 
+
+  ]
   //現在收陣列資料
   useEffect(() => {
+    console.log('=====props.data',props.data);
+    if(props.data.length !== 1){
+      props.data.sort(function(a, b) {
+        return parseInt(b.attrs.TimeStamp) - parseInt(a.attrs.TimeStamp);
+      });
+    }
+
     setList(props.data);
+
   },[props.data]);
 
 
@@ -25,80 +43,85 @@ const CredListComponent = (props) => {
     console.log('list.length', list.length);
     console.log('itemData', itemData);
     
-    props.navigation.navigate({
-      name:props.toPage,
-      params:{
-        from:props.from,
-        credData:itemData,
-        navigation:props.navigation
-      }
-    })
+    if(typeof props.mergedAttribute !== 'undefined'){
+      console.log('props mergedAttribute undefined', props.mergedAttribute);
+
+      props.navigation.navigate({
+        name:props.toPage,
+        params:{
+          from:props.from,
+          credData:itemData,
+          navigation:props.navigation,
+          mergedAttribute:props.mergedAttribute
+        }
+      })
+    }else{
+      console.log('props mergedAttribute ', props.mergedAttribute);
+
+      props.navigation.navigate({
+        name:props.toPage,
+        params:{
+          from:props.from,
+          credData:itemData,
+          navigation:props.navigation
+        }
+      })
+    }
+
   }
 
-  const CardTypeA = ({index, item}) => {
+  const getParsedTimeStamp = (text) => {
+    const year = text.slice(0,4);
+    const month = text.slice(4,6);
+    const day = text.slice(6,8);
+
+    return `${year}/${month}/${day}`;
+  }
+
+  const CardBody = (props) => {
+    return (
+      <>
+        <View style={styles.header}>
+          <View style={styles.titleArea}>
+            <Image style={styles.titleIcon} source={titleIcon[props.index%6]}></Image>
+            <Text style={styles.titleText}>Snowbridge Inc.</Text>
+          </View>  
+          <View style={styles.dateArea}>
+              <Text style={styles.dateText}>{getParsedTimeStamp(props.item.attrs.TimeStamp)}</Text>
+          </View>           
+        </View>
+        <View style={styles.body}>
+          <Text style={headline.Headline3}>{props.item.attrs.Title}</Text>
+        </View>
+      </>
+    )
+  }
+
+  const CardTypeA = ({item, index}) => {
     return (
       <TouchableOpacity key={`cred${index}`} style={styles.card} onPress={()=>{onPressItem(item)}}>
         <ImageBackground source={require(`../../assets/background/CredentailCardBG01.png`)} resizeMode="stretch" style={styles.backgroundImage}>
-          <View style={styles.header}>
-            <View style={styles.nameArea}>
-                <Text style={styles.dateText}>Snowbridge Inc.</Text>
-            </View>  
-            <View style={styles.dateArea}>
-                <Text style={styles.dateText}>Sep 4, 2022</Text>
-            </View>           
-          </View>
-          <View style={styles.body}>
-            <Text style={headline.Headline3}>{item.schema_id}</Text>
-          </View>
-          <View style={styles.footer}>
-            <Text style={styles.dateText}>A12345678</Text>
-          </View>
+          <CardBody item={item} index={index}></CardBody>
         </ImageBackground>
       </TouchableOpacity>  
     )
   }
 
-  const CardTypeB = ({index, item}) => {
+  const CardTypeB = ({item, index}) => {
     return (
       <TouchableOpacity key={`cred${index}`} style={styles.card} onPress={()=>{onPressItem(item)}}>
         <ImageBackground source={require(`../../assets/background/CredentailCardBG02.png`)} resizeMode="stretch" style={styles.backgroundImage}>
-          <View style={styles.header}>
-            <View style={styles.nameArea}>
-                <Text style={styles.dateText}>Snowbridge Inc.</Text>
-            </View>  
-            <View style={styles.dateArea}>
-                <Text style={styles.dateText}>Sep 4, 2022</Text>
-            </View>           
-          </View>
-          <View style={styles.body}>
-            <Text style={headline.Headline3}>employee ID card</Text>
-          </View>
-          <View style={styles.footer}>
-            <Text style={styles.dateText}>A12345678</Text>
-          </View>
+          <CardBody item={item} index={index}></CardBody>
         </ImageBackground>
       </TouchableOpacity>  
     )
   }
 
-  const CardTypeC = ({index, item}) => {
+  const CardTypeC = ({item, index}) => {
     return (
       <TouchableOpacity key={`cred${index}`} style={styles.card} onPress={()=>{onPressItem(item)}}>
         <ImageBackground source={require(`../../assets/background/CredentailCardBG03.png`)} resizeMode="stretch" style={styles.backgroundImage}>
-          <View style={styles.header}>
-            <View style={styles.nameArea}>
-                <Text style={styles.dateText}>Snowbridge Inc.</Text>
-            </View>  
-            <View style={styles.dateArea}>
-                <Text style={styles.dateText}>Sep 4, 2022</Text>
-            </View>           
-          </View>
-          <View style={styles.body}>
-            <Text style={headline.Headline3}>employee ID card</Text>
-          </View>
-          <View style={styles.footer}>
-            <Text style={styles.dateText}>A12345678</Text>
-          </View>
+          <CardBody item={item} index={index}></CardBody>
         </ImageBackground>
       </TouchableOpacity>  
     )
@@ -149,8 +172,17 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     flexDirection:'row',
   },
-  nameArea:{
+  titleArea:{    
+    justifyContent: "flex-start",
+    flexDirection:'row',
+    alignItems:'center'
   },  
+  titleIcon:{
+    width: 25,
+    height: 25,
+    resizeMode: 'contain',
+    marginRight:5
+  },
   dateArea:{
     flex:1,
   },
@@ -163,11 +195,9 @@ const styles = StyleSheet.create({
     paddingRight:5
   },
   body:{
-    flex:3,
+    flex:2,
   },
-  footer:{
-    flex:1,
-  },
+
   credentialName:{
     color:'black',
   },
