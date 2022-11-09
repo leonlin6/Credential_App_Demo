@@ -75,8 +75,7 @@ const HistoryResult = (props) => {
 
 
   const onBack = () => {
-    // props.navigation.goBack();
-    setResult(!result);
+    props.navigation.goBack();
   }
 
 
